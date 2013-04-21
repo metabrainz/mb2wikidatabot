@@ -1,7 +1,18 @@
-import common
+"""
+This is a bot to automatically add MBIDs to Wikidata pages of artists.
+
+Usage: python2 artists.py [options]
+
+Command line options:
+
+-dryrun:    Don't write anything on the server
+-limit:x:   Only handle x artists
+"""
+
 import pywikibot as wp
 
 
+from bot import common
 from sys import exit
 
 
@@ -36,9 +47,9 @@ AND
 AND
     bwap.gid is NULL
 AND
-    url.url LIKE 'http://en.%'
+    url.url LIKE 'http://en.%%'
 ORDER BY a.id
-LIMIT 1;
+LIMIT (%s) ;
 """
 
 CREATE_PROCESSED_TABLE_QUERY =\
@@ -55,7 +66,7 @@ def artist_done(mbid):
     common.db.cursor().execute("INSERT INTO bot_wikidata_artist_processed (GID) VALUES (%s)", (mbid, ))
 
 
-def add_mbid_claim_to_item(pid, item, mbid):
+def add_mbid_claim_to_item(pid, item, mbid, simulate=False):
     """
     Adds a claim with pid `pid` with value `mbid` to `item`
 
@@ -67,36 +78,49 @@ def add_mbid_claim_to_item(pid, item, mbid):
     claim.setTarget(mbid)
     wp.output(u"Adding property {pid}, value {mbid} to {title}".format
               (pid=pid, mbid=mbid, title=item.title()))
+    if simulate:
+        wp.output("Simulation, no property has been added")
+        return
     try:
-        wp.output("It would be happening!")  #Remove this for production usage
-        #item.addClaim(claim, True)
+        item.addClaim(claim, True)
     except wp.UserBlocked as e:
         wp.error("I have been blocked")
         exit(1)
     except wp.Error as e:
-        wp.waring(e)
+        wp.warning(e)
         return
     else:
         artist_done(mbid)
 
 
-def add_artist_mbid_claim(item, mbid):
+def add_artist_mbid_claim(item, mbid, simulate):
     """
     Adds an MBID property to `item`
 
     :type item: pywikibot.ItemPage
     :type mbid: str
     """
-    add_mbid_claim_to_item(ARTIST_MBID_PID, item, mbid)
+    add_mbid_claim_to_item(ARTIST_MBID_PID, item, mbid, simulate)
 
 
 def main():
+    simulate = False
+    limit = 100
+
+    for arg in wp.handleArgs():
+        if arg =='-dryrun':
+            simulate = True
+        elif arg.startswith('-limit'):
+            limit = int(arg[len('-limit:'):])
+
     common.WIKIDATA.login()
-    results = common.get_entities_with_wikilinks(CREATE_PROCESSED_TABLE_QUERY,
-                                                 MB_WIKI_ARTIST_QUERY)
-    if results is None:
-        wp.output("Nope")
+    common.setup_db(CREATE_PROCESSED_TABLE_QUERY)
+    results = common.get_entities_with_wikilinks(MB_WIKI_ARTIST_QUERY, limit)
+
+    if results.rowcount == 0:
+        wp.output("No more unprocessed entries in MB")
         exit(0)
+
     for name, mbid, wikipage in results:
         itempage = common.get_wikidata_itempage_from_wikilink(wikipage)
         if itempage is None:
@@ -111,9 +135,9 @@ def main():
 
         wp.output("The MBID for {name} is {mbid} and does not exist in Wikidata".format(
                     name=name, mbid=mbid))
-        add_artist_mbid_claim(itempage, mbid)
+        add_artist_mbid_claim(itempage, mbid, simulate)
+
     common.db.commit()
 
 if __name__ == '__main__':
-    wp.handleArgs()
     main()

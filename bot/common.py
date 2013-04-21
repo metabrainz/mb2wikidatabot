@@ -14,14 +14,19 @@ DB = 'musicbrainz'
 
 db = None
 
-def get_entities_with_wikilinks(processed_table_query, query):
+
+def setup_db(processed_table_query):
     global db
     db = pg.connect(database=DB, user=DB_USER)
     cur = db.cursor()
     cur.execute("SET search_path TO musicbrainz")
     cur.execute(processed_table_query)
     db.commit()
-    cur.execute(query)
+
+
+def get_entities_with_wikilinks(query, limit):
+    cur = db.cursor()
+    cur.execute(query, (limit,))
     return cur
 
 
