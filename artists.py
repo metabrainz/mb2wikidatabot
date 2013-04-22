@@ -66,33 +66,6 @@ def artist_done(mbid):
     common.db.cursor().execute("INSERT INTO bot_wikidata_artist_processed (GID) VALUES (%s)", (mbid, ))
 
 
-def add_mbid_claim_to_item(pid, item, mbid, simulate=False):
-    """
-    Adds a claim with pid `pid` with value `mbid` to `item`
-
-    :type pid: str
-    :type mbid: str
-    :type item: pywikibot.ItemPage
-    """
-    claim = wp.Claim(common.WIKIDATA, pid)
-    claim.setTarget(mbid)
-    wp.output(u"Adding property {pid}, value {mbid} to {title}".format
-              (pid=pid, mbid=mbid, title=item.title()))
-    if simulate:
-        wp.output("Simulation, no property has been added")
-        return
-    try:
-        item.addClaim(claim, True)
-    except wp.UserBlocked as e:
-        wp.error("I have been blocked")
-        exit(1)
-    except wp.Error as e:
-        wp.warning(e)
-        return
-    else:
-        artist_done(mbid)
-
-
 def add_artist_mbid_claim(item, mbid, simulate):
     """
     Adds an MBID property to `item`
@@ -100,7 +73,7 @@ def add_artist_mbid_claim(item, mbid, simulate):
     :type item: pywikibot.ItemPage
     :type mbid: str
     """
-    add_mbid_claim_to_item(ARTIST_MBID_PID, item, mbid, simulate)
+    common.add_mbid_claim_to_item(ARTIST_MBID_PID, item, mbid, artist_done, simulate)
 
 
 def main():

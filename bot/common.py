@@ -40,3 +40,31 @@ def get_wikidata_itempage_from_wikilink(wikilink):
     except wp.NoPage as e:
         return None
     return wikidatapage
+
+
+def add_mbid_claim_to_item(pid, item, mbid, donefunc, simulate=False):
+    """
+    Adds a claim with pid `pid` with value `mbid` to `item` and call `donefunc`
+    with `mbid` to signal the completion.
+
+    :type pid: str
+    :type mbid: str
+    :type item: pywikibot.ItemPage
+    """
+    claim = wp.Claim(WIKIDATA, pid)
+    claim.setTarget(mbid)
+    wp.output(u"Adding property {pid}, value {mbid} to {title}".format
+              (pid=pid, mbid=mbid, title=item.title()))
+    if simulate:
+        wp.output("Simulation, no property has been added")
+        return
+    try:
+        item.addClaim(claim, True)
+    except wp.UserBlocked as e:
+        wp.error("I have been blocked")
+        exit(1)
+    except wp.Error as e:
+        wp.warning(e)
+        return
+    else:
+        donefunc(mbid)
