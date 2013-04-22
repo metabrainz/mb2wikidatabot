@@ -11,7 +11,7 @@ The former can be installed with
 
 the latter with
 
-> svn co http://svn.wikimedia.org/svnroot/pywikipedia/branches/rewrite
+> svn co http://svn.wikimedia.org/svnroot/pywikipedia/branches/rewrite pywikipediabot
 >
 > cd pywikipediabot
 >
