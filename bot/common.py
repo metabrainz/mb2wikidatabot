@@ -8,9 +8,8 @@ import pywikibot as wp
 from urlparse import urlparse
 
 WIKIDATA = wp.Site('wikidata', 'wikidata')
-ENWIKI = wp.Site('en', 'wikipedia')
 
-ENWIKI_PREFIX = "/wiki/"
+WIKI_PREFIX = "/wiki/"
 
 DB_USER = 'musicbrainz'
 DB = 'musicbrainz'
@@ -35,8 +34,11 @@ def get_entities_with_wikilinks(query, limit):
 
 def get_wikidata_itempage_from_wikilink(wikilink):
     """Given a link to a wikipedia page, retrieve its page on Wikidata"""
-    pagename = urlparse(wikilink).path.replace(ENWIKI_PREFIX, "")
-    enwikipage = wp.Page(ENWIKI, pagename)
+    parsed_url = urlparse(wikilink)
+    pagename = parsed_url.path.replace(WIKI_PREFIX, "")
+    wikilanguage = parsed_url.netloc.split(".")[0]
+    wikisite = wp.Site(wikilanguage, "wikipedia")
+    enwikipage = wp.Page(wikisite, pagename)
     wikidatapage = wp.ItemPage.fromPage(enwikipage)
     try:
         wikidatapage.get()

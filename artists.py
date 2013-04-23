@@ -44,8 +44,6 @@ AND
     lau.edits_pending=0
 AND
     bwap.gid is NULL
-AND
-    url.url LIKE 'http://en.%%'
 LIMIT (%s) ;
 """
 
