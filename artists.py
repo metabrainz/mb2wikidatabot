@@ -48,7 +48,6 @@ AND
     bwap.gid is NULL
 AND
     url.url LIKE 'http://en.%%'
-ORDER BY a.id
 LIMIT (%s) ;
 """
 
