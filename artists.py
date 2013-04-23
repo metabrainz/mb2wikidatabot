@@ -26,7 +26,7 @@ MB_WIKI_WORK_LINK_ID = 279
 
 MB_WIKI_ARTIST_QUERY =\
 """
-SELECT an.name, a.gid, url.url
+SELECT a.gid, url.url
 FROM l_artist_url AS lau
 JOIN link AS l
     ON lau.link=l.id
@@ -34,8 +34,6 @@ JOIN link_type AS lt
     ON lt.id=l.link_type
 JOIN artist AS a
     ON entity0=a.id
-JOIN artist_name AS an
-    ON an.id=a.name
 JOIN url
     ON lau.entity1=url.id
 LEFT JOIN bot_wikidata_artist_processed AS bwap
@@ -93,20 +91,20 @@ def main():
         wp.output("No more unprocessed entries in MB")
         exit(0)
 
-    for name, mbid, wikipage in results:
+    for mbid, wikipage in results:
         itempage = common.get_wikidata_itempage_from_wikilink(wikipage)
         if itempage is None:
-            wp.output(u"There's no wikidata page for {name}".format(name=name))
+            wp.output(u"There's no wikidata page for {mbid}".format(mbid=mbid))
             continue
 
         if any(key.lower() == ARTIST_MBID_PID.lower() for key in itempage.claims.keys()):
-            wp.output(u"{name} is already has property {pid}".format(name=name,
+            wp.output(u"{mbid} already has property {pid}".format(mbid=mbid,
                                                                      pid=ARTIST_MBID_PID))
             artist_done(mbid)
             continue
 
-        wp.output("The MBID for {name} is {mbid} and does not exist in Wikidata".format(
-                    name=name, mbid=mbid))
+        wp.output("{mbid} is not linked in in Wikidata".format(
+                    mbid=mbid))
         add_artist_mbid_claim(itempage, mbid, simulate)
 
     common.db.commit()
