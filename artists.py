@@ -44,7 +44,7 @@ AND
     lau.edits_pending=0
 AND
     bwap.gid is NULL
-LIMIT (%s) ;
+LIMIT %s;
 """
 
 CREATE_PROCESSED_TABLE_QUERY =\
@@ -73,7 +73,7 @@ def add_artist_mbid_claim(item, mbid, simulate):
 
 def main():
     simulate = False
-    limit = 100
+    limit = None
 
     for arg in wp.handleArgs():
         if arg =='-dryrun':
