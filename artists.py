@@ -56,9 +56,19 @@ CREATE TABLE IF NOT EXISTS bot_wikidata_artist_processed (
 
 """
 
+ARTIST_DONE_QUERY = \
+"""
+INSERT INTO bot_wikidata_artist_processed (GID)
+    SELECT (%(mbid)s)
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM bot_wikidata_artist_processed
+        WHERE gid = (%(mbid)s)
+);
+"""
 
 def artist_done(mbid):
-    common.db.cursor().execute("INSERT INTO bot_wikidata_artist_processed (GID) VALUES (%s)", (mbid, ))
+    common.db.cursor().execute(ARTIST_DONE_QUERY, {'mbid': mbid})
 
 
 def add_artist_mbid_claim(item, mbid, simulate):
