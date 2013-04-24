@@ -100,7 +100,11 @@ def main():
         exit(0)
 
     for mbid, wikipage in results:
-        itempage = common.get_wikidata_itempage_from_wikilink(wikipage)
+        try:
+            itempage = common.get_wikidata_itempage_from_wikilink(wikipage)
+        except wp.NoSuchSite:
+            wp.output("{page}: no supported family".format(page=wikipage))
+            continue
         if itempage is None:
             wp.output(u"There's no wikidata page for {mbid}".format(mbid=mbid))
             continue
