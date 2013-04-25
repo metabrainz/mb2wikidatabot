@@ -12,17 +12,9 @@ Command line options:
 import pywikibot as wp
 
 
-from bot import common
+from bot import common, const
 from sys import exit
 
-
-ARTIST_MBID_PID = 'P434'
-
-
-MB_WIKI_ARTIST_LINK_ID = 179
-MB_WIKI_ALBUM_LINK_ID = 89
-MB_WIKI_LABEL_LINK_ID = 216
-MB_WIKI_WORK_LINK_ID = 279
 
 MB_WIKI_ARTIST_QUERY =\
 """
@@ -78,7 +70,7 @@ def add_artist_mbid_claim(item, mbid, simulate):
     :type item: pywikibot.ItemPage
     :type mbid: str
     """
-    common.add_mbid_claim_to_item(ARTIST_MBID_PID, item, mbid, artist_done, simulate)
+    common.add_mbid_claim_to_item(const.ARTIST_MBID_PID, item, mbid, artist_done, simulate)
 
 
 def main():
@@ -109,9 +101,9 @@ def main():
             wp.output(u"There's no wikidata page for {mbid}".format(mbid=mbid))
             continue
 
-        if any(key.lower() == ARTIST_MBID_PID.lower() for key in itempage.claims.keys()):
+        if any(key.lower() == const.ARTIST_MBID_PID.lower() for key in itempage.claims.keys()):
             wp.output(u"{mbid} already has property {pid}".format(mbid=mbid,
-                                                                     pid=ARTIST_MBID_PID))
+                                                                     pid=const.ARTIST_MBID_PID))
             artist_done(mbid)
             continue
 
