@@ -99,7 +99,7 @@ def main():
         wp.output("No more unprocessed entries in MB")
         exit(0)
 
-    for mbid, wikipage in results:
+    for index, (mbid, wikipage) in enumerate(results):
         try:
             itempage = common.get_wikidata_itempage_from_wikilink(wikipage)
         except wp.NoSuchSite:
@@ -118,6 +118,8 @@ def main():
         wp.output("{mbid} is not linked in in Wikidata".format(
                     mbid=mbid))
         add_artist_mbid_claim(itempage, mbid, simulate)
+        if index % 100 == 0:
+            common.db.commit()
 
     common.db.commit()
 
