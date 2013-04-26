@@ -8,12 +8,7 @@ Command line options:
 -dryrun:    Don't write anything on the server
 -limit:x:   Only handle x artists
 """
-
-import pywikibot as wp
-
-
 from bot import common, const
-from sys import exit
 
 
 MB_WIKI_ARTIST_QUERY =\
@@ -59,65 +54,15 @@ INSERT INTO bot_wikidata_artist_processed (GID)
 );
 """
 
+
 def artist_done(mbid):
     common.db.cursor().execute(ARTIST_DONE_QUERY, {'mbid': mbid})
 
 
-def add_artist_mbid_claim(item, mbid, simulate):
-    """
-    Adds an MBID property to `item`
-
-    :type item: pywikibot.ItemPage
-    :type mbid: str
-    """
-    common.add_mbid_claim_to_item(const.ARTIST_MBID_PID, item, mbid, artist_done, simulate)
-
-
-def main():
-    simulate = False
-    limit = None
-
-    for arg in wp.handleArgs():
-        if arg =='-dryrun':
-            simulate = True
-        elif arg.startswith('-limit'):
-            limit = int(arg[len('-limit:'):])
-
-    common.WIKIDATA.login()
-    common.setup_db(CREATE_PROCESSED_TABLE_QUERY)
-    results = common.get_entities_with_wikilinks(MB_WIKI_ARTIST_QUERY, limit)
-
-    if results.rowcount == 0:
-        wp.output("No more unprocessed entries in MB")
-        exit(0)
-
-    for index, (mbid, wikipage) in enumerate(results):
-        try:
-            itempage = common.get_wikidata_itempage_from_wikilink(wikipage)
-        except wp.NoSuchSite:
-            wp.output("{page}: no supported family".format(page=wikipage))
-            continue
-        if itempage is None:
-            wp.output(u"There's no wikidata page for {mbid}".format(mbid=mbid))
-            continue
-
-        if any(key.lower() == const.ARTIST_MBID_PID.lower() for key in itempage.claims.keys()):
-            wp.output(u"{mbid} already has property {pid}".format(mbid=mbid,
-                                                                     pid=const.ARTIST_MBID_PID))
-            artist_done(mbid)
-            continue
-
-        wp.output("{mbid} is not linked in in Wikidata".format(
-                    mbid=mbid))
-        add_artist_mbid_claim(itempage, mbid, simulate)
-        if index % 100 == 0:
-            common.db.commit()
-
-    common.db.commit()
-
 if __name__ == '__main__':
     try:
-        main()
+        common.mainloop(const.ARTIST_MBID_PID, CREATE_PROCESSED_TABLE_QUERY,
+                    MB_WIKI_ARTIST_QUERY, artist_done)
     except (KeyboardInterrupt, SystemExit):
         # Commit what's already been done and exit
         common.db.commit()

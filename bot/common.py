@@ -73,3 +73,44 @@ def add_mbid_claim_to_item(pid, item, mbid, donefunc, simulate=False):
         return
     else:
         donefunc(mbid)
+
+
+def mainloop(pid, create_processed_table_query, wiki_entity_query, donefunc):
+    simulate = False
+    limit = None
+
+    for arg in wp.handleArgs():
+        if arg == '-dryrun':
+            simulate = True
+        elif arg.startswith('-limit'):
+            limit = int(arg[len('-limit:'):])
+
+    WIKIDATA.login()
+    setup_db(create_processed_table_query)
+    results = get_entities_with_wikilinks(wiki_entity_query, limit)
+
+    if results.rowcount == 0:
+        wp.output("No more unprocessed entries in MB")
+        exit(0)
+
+    for index, (mbid, wikipage) in enumerate(results):
+        try:
+            itempage = get_wikidata_itempage_from_wikilink(wikipage)
+        except wp.NoSuchSite:
+            wp.output("{page}: no supported family".format(page=wikipage))
+            continue
+        if itempage is None:
+            wp.output(u"There's no wikidata page for {mbid}".format(mbid=mbid))
+            continue
+
+        if any(key.lower() == pid.lower() for key in itempage.claims.keys()):
+            wp.output(u"{mbid} already has property {pid}".format(mbid=mbid,
+                                                                     pid=pid))
+            donefunc(mbid)
+            continue
+
+        wp.output("{mbid} is not linked in in Wikidata".format(
+                    mbid=mbid))
+        add_mbid_claim_to_item(pid, itempage, mbid, donefunc, simulate)
+        if index % 100 == 0:
+            db.commit()
