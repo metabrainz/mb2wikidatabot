@@ -73,7 +73,7 @@ def add_mbid_claim_to_item(pid, item, mbid, donefunc, simulate=False):
         return
     else:
         wp.output("Adding the source Claim")
-        claim.addSource(const.MUSICBRAINZ_CLAIM)
+        claim.addSource(const.MUSICBRAINZ_CLAIM, bot=True)
         donefunc(mbid)
 
 
