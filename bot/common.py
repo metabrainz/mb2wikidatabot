@@ -5,9 +5,9 @@ psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 import pywikibot as wp
 
 
+from . import const
 from urlparse import urlparse
 
-WIKIDATA = wp.Site('wikidata', 'wikidata')
 
 WIKI_PREFIX = "/wiki/"
 
@@ -56,7 +56,7 @@ def add_mbid_claim_to_item(pid, item, mbid, donefunc, simulate=False):
     :type mbid: str
     :type item: pywikibot.ItemPage
     """
-    claim = wp.Claim(WIKIDATA, pid)
+    claim = wp.Claim(const.WIKIDATA, pid)
     claim.setTarget(mbid)
     wp.output(u"Adding property {pid}, value {mbid} to {title}".format
               (pid=pid, mbid=mbid, title=item.title()))
@@ -72,6 +72,8 @@ def add_mbid_claim_to_item(pid, item, mbid, donefunc, simulate=False):
         wp.warning(e)
         return
     else:
+        wp.output("Adding the source Claim")
+        claim.addSource(const.MUSICBRAINZ_CLAIM)
         donefunc(mbid)
 
 
@@ -85,7 +87,7 @@ def mainloop(pid, create_processed_table_query, wiki_entity_query, donefunc):
         elif arg.startswith('-limit'):
             limit = int(arg[len('-limit:'):])
 
-    WIKIDATA.login()
+    const.WIKIDATA.login()
     setup_db(create_processed_table_query)
     results = get_entities_with_wikilinks(wiki_entity_query, limit)
 
