@@ -60,10 +60,5 @@ def artist_done(mbid):
 
 
 if __name__ == '__main__':
-    try:
-        common.mainloop(const.ARTIST_MBID_PID, CREATE_PROCESSED_TABLE_QUERY,
-                    MB_WIKI_ARTIST_QUERY, artist_done)
-    except (KeyboardInterrupt, SystemExit):
-        # Commit what's already been done and exit
-        common.db.commit()
-        raise
+    common.mainloop(const.ARTIST_MBID_PID, CREATE_PROCESSED_TABLE_QUERY,
+                MB_WIKI_ARTIST_QUERY, artist_done)

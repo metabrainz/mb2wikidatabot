@@ -20,6 +20,7 @@ db = None
 def setup_db(processed_table_query):
     global db
     db = pg.connect(database=DB, user=DB_USER)
+    db.autocommit = True
     cur = db.cursor()
     cur.execute("SET search_path TO musicbrainz")
     cur.execute(processed_table_query)
@@ -114,5 +115,3 @@ def mainloop(pid, create_processed_table_query, wiki_entity_query, donefunc):
         wp.output("{mbid} is not linked in in Wikidata".format(
                     mbid=mbid))
         add_mbid_claim_to_item(pid, itempage, mbid, donefunc, simulate)
-        if index % 100 == 0:
-            db.commit()
