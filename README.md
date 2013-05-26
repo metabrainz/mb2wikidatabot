@@ -16,3 +16,7 @@ the latter with
 > cd pywikipediabot
 >
 > python2 setup.py install
+
+Copy `bot/settings.py.dist` to `bot/settings.py` and edit the connection string
+which is documented
+[here](http://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-CONNSTRING).

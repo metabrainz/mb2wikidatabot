@@ -5,21 +5,19 @@ psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 import pywikibot as wp
 
 
-from . import const
+from . import const, settings
 from urlparse import urlparse
 
 
 WIKI_PREFIX = "/wiki/"
 
-DB_USER = 'musicbrainz'
-DB = 'musicbrainz'
 
 db = None
 
 
 def setup_db(processed_table_query):
     global db
-    db = pg.connect(database=DB, user=DB_USER)
+    db = pg.connect(settings.connection_string)
     db.autocommit = True
     cur = db.cursor()
     cur.execute("SET search_path TO musicbrainz")
