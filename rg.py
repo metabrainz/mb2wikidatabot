@@ -5,6 +5,7 @@ Usage: python2 rg.py [options]
 
 Command line options:
 
+-createtable: Create the table storing the processed MBIDs
 -dryrun:    Don't write anything on the server
 -limit:x:   Only handle x release groups
 """
@@ -36,7 +37,7 @@ LIMIT %s;
 
 CREATE_PROCESSED_TABLE_QUERY =\
 """
-CREATE TABLE IF NOT EXISTS bot_wikidata_rg_processed (
+CREATE TABLE bot_wikidata_rg_processed (
     gid uuid NOT NULL PRIMARY KEY,
     processed timestamp with time zone DEFAULT now()
 );

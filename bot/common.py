@@ -15,14 +15,15 @@ WIKI_PREFIX = "/wiki/"
 db = None
 
 
-def setup_db(processed_table_query):
+def setup_db(processed_table_query, create_table):
     global db
     db = pg.connect(settings.connection_string)
     db.autocommit = True
-    cur = db.cursor()
-    cur.execute("SET search_path TO musicbrainz")
-    cur.execute(processed_table_query)
-    db.commit()
+    if create_table:
+        cur = db.cursor()
+        cur.execute("SET search_path TO musicbrainz")
+        cur.execute(processed_table_query)
+        db.commit()
 
 
 def get_entities_with_wikilinks(query, limit):
@@ -77,6 +78,7 @@ def add_mbid_claim_to_item(pid, item, mbid, donefunc, simulate=False):
 
 
 def mainloop(pid, create_processed_table_query, wiki_entity_query, donefunc):
+    create_table = False
     simulate = False
     limit = None
 
@@ -85,9 +87,12 @@ def mainloop(pid, create_processed_table_query, wiki_entity_query, donefunc):
             simulate = True
         elif arg.startswith('-limit'):
             limit = int(arg[len('-limit:'):])
+        elif arg == "-createtable":
+            create_table = True
+
 
     const.WIKIDATA.login()
-    setup_db(create_processed_table_query)
+    setup_db(create_processed_table_query, create_table)
     results = get_entities_with_wikilinks(wiki_entity_query, limit)
 
     if results.rowcount == 0:
