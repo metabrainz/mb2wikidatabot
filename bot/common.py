@@ -92,6 +92,7 @@ def mainloop(pid, create_processed_table_query, wiki_entity_query, donefunc):
 
 
     const.WIKIDATA.login()
+    const.MUSICBRAINZ_CLAIM.setTarget(const.MUSICBRAINZ_WIKIDATAPAGE)
     setup_db(create_processed_table_query, create_table)
     results = get_entities_with_wikilinks(wiki_entity_query, limit)
 
