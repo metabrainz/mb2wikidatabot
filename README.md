@@ -20,3 +20,5 @@ the latter with
 Copy `bot/settings.py.dist` to `bot/settings.py` and edit the connection string
 which is documented
 [here](http://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-CONNSTRING).
+
+To use the `stats.py` file which generates a plot of the number of entries linked in Wikidata you also need [matplotlib](http://matplotlib.org/) and [brewer2mpl](https://github.com/jiffyclub/brewer2mpl).
