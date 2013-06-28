@@ -25,7 +25,7 @@ def main():
         data = cursor.fetchall()
         dates = mdates.date2num(item[0] for item in data)
         plt.plot_date(dates, [item[1] for item in data], linestyle="solid",
-                      marker=",", label=entity, color=colors[i])
+                      marker=",", label=entity, fmt='')
     plt.xticks(rotation=20)
     plt.grid(True)
     plt.legend(loc="best")
