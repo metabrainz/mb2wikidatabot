@@ -15,6 +15,10 @@ WIKI_PREFIX = "/wiki/"
 db = None
 
 
+class IsDisambigPage(Exception):
+    pass
+
+
 def setup_db(processed_table_query, create_table):
     global db
     db = pg.connect(settings.connection_string)
@@ -39,6 +43,8 @@ def get_wikidata_itempage_from_wikilink(wikilink):
     wikilanguage = parsed_url.netloc.split(".")[0]
     wikisite = wp.Site(wikilanguage, "wikipedia")
     enwikipage = wp.Page(wikisite, pagename)
+    if enwikipage.isDisambig():
+        raise IsDisambigPage()
     wikidatapage = wp.ItemPage.fromPage(enwikipage)
     try:
         wikidatapage.get()
@@ -105,6 +111,9 @@ def mainloop(pid, create_processed_table_query, wiki_entity_query, donefunc):
             itempage = get_wikidata_itempage_from_wikilink(wikipage)
         except wp.NoSuchSite:
             wp.output("{page}: no supported family".format(page=wikipage))
+            continue
+        except IsDisambigPage:
+            wp.output("{page} is a disambiguation page".format(page=wikipage))
             continue
         if itempage is None:
             wp.debug(u"There's no wikidata page for {mbid}".format(mbid=mbid),
