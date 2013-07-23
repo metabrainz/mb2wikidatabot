@@ -107,7 +107,8 @@ def mainloop(pid, create_processed_table_query, wiki_entity_query, donefunc):
             wp.output("{page}: no supported family".format(page=wikipage))
             continue
         if itempage is None:
-            wp.output(u"There's no wikidata page for {mbid}".format(mbid=mbid))
+            wp.debug(u"There's no wikidata page for {mbid}".format(mbid=mbid),
+                    layer="")
             continue
 
         if any(key.lower() == pid.lower() for key in itempage.claims.keys()):
