@@ -44,20 +44,20 @@ CREATE TABLE bot_wikidata_work_processed (
 
 """
 
-ARTIST_DONE_QUERY = \
+WORK_DONE_QUERY = \
 """
 INSERT INTO bot_wikidata_work_processed (GID)
     SELECT (%(mbid)s)
     WHERE NOT EXISTS (
         SELECT 1
-        FROM bot_wikidata_artist_processed
+        FROM bot_wikidata_work_processed
         WHERE gid = (%(mbid)s)
 );
 """
 
 
 def work_done(mbid):
-    common.db.cursor().execute(ARTIST_DONE_QUERY, {'mbid': mbid})
+    common.db.cursor().execute(WORK_DONE_QUERY, {'mbid': mbid})
 
 
 if __name__ == '__main__':
