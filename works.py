@@ -15,7 +15,7 @@ from bot import common, const
 MB_WIKI_WORKS_QUERY =\
 """
 SELECT w.gid, url.url
-FROM l_work_url AS lwu
+FROM l_url_work AS lwu
 JOIN link AS l
     ON lwu.link=l.id
 JOIN link_type AS lt
@@ -62,4 +62,4 @@ def work_done(mbid):
 
 if __name__ == '__main__':
     common.mainloop(const.WORK_MBID_PID, CREATE_PROCESSED_TABLE_QUERY,
-                MB_WIKI_WORK_QUERY, work_done)
+                MB_WIKI_WORKS_QUERY, work_done)
