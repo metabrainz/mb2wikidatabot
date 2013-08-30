@@ -62,7 +62,7 @@ def add_mbid_claim_to_item(pid, item, mbid, donefunc, simulate=False):
     :type mbid: str
     :type item: pywikibot.ItemPage
     """
-    claim = wp.Claim(const.WIKIDATA, pid)
+    claim = wp.Claim(const.WIKIDATA_DATASITE, pid)
     claim.setTarget(mbid)
     wp.output(u"Adding property {pid}, value {mbid} to {title}".format
               (pid=pid, mbid=mbid, title=item.title()))
@@ -95,7 +95,6 @@ def mainloop(pid, create_processed_table_query, wiki_entity_query, donefunc):
             limit = int(arg[len('-limit:'):])
         elif arg == "-createtable":
             create_table = True
-
 
     const.WIKIDATA.login()
     const.MUSICBRAINZ_CLAIM.setTarget(const.MUSICBRAINZ_WIKIDATAPAGE)
