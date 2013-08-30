@@ -110,7 +110,7 @@ def mainloop(pid, create_processed_table_query, wiki_entity_query, donefunc):
         try:
             itempage = get_wikidata_itempage_from_wikilink(wikipage)
         except wp.NoSuchSite:
-            wp.output("{page}: no supported family".format(page=wikipage))
+            wp.output("{page} no supported family".format(page=wikipage))
             continue
         except IsDisambigPage:
             wp.output("{page} is a disambiguation page".format(page=wikipage))
