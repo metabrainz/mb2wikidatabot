@@ -3,7 +3,7 @@
 ## Installation
 
 This needs both `psycopg2` and
-[pywikipediabot](http://pywikipediabot.sourceforge.net/) (rewrite branch)
+[pywikipediabot](https://www.mediawiki.org/wiki/PWB) (core repository).
 
 The former can be installed with
 
@@ -11,7 +11,7 @@ The former can be installed with
 
 the latter with
 
-> svn co http://svn.wikimedia.org/svnroot/pywikipedia/branches/rewrite pywikipediabot
+> git clone --recursive https://gerrit.wikimedia.org/r/pywikibot/core.git pywikipediabot
 >
 > cd pywikipediabot
 >
