@@ -9,7 +9,7 @@ PROPERTY_IDS = {
     "area": "P982",
     "artist": "P434",
     "label": "P966",
-    "place": "P1004"
+    "place": "P1004",
     "release_group": "P436",
     "work": "P435",
 }
