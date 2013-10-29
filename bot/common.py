@@ -19,15 +19,45 @@ class IsDisambigPage(Exception):
     pass
 
 
-def setup_db(processed_table_query, create_table):
+def create_url_mbid_query(entitytype, linkid):
+    """Creates a specific query for `entitytype` and `linkid` from
+    `const.GENERIC_URL_MBID_QUERY`.
+    """
+    if entitytype == "work":
+        # TODO the table for links from works to urls is called l_url_work, for
+        # all other entity types the table is called l_{type}_work. Find a
+        # better way than hardcoding this exception.
+        return const.MB_WIKI_WORKS_QUERY
+    return const.GENERIC_URL_MBID_QUERY.format(etype=entitytype, linkid=linkid)
+
+
+def create_done_func(entitytype):
+    """Creates a specific function for `entitytype` from
+    `const.GENERIC_DONE_QUERY`.
+    """
+    query = const.GENERIC_DONE_QUERY.format(etype=entitytype)
+    func = lambda mbid: db.cursor().execute(query, {'mbid': mbid})
+    return func
+
+
+def create_processed_table_query(entitytype):
+    """Creates a specific query for `entitytype` and `linkid` from
+    `const.GENERIC_CREATE_PROCESSED_TABLE_QUERY`.
+    """
+    return const.GENERIC_CREATE_PROCESSED_TABLE_QUERY.format(etype=entitytype)
+
+
+def setup_db():
     global db
     db = pg.connect(settings.connection_string)
     db.autocommit = True
-    if create_table:
-        cur = db.cursor()
-        cur.execute("SET search_path TO musicbrainz")
-        cur.execute(processed_table_query)
-        db.commit()
+
+
+def create_table(query):
+    cur = db.cursor()
+    cur.execute("SET search_path TO musicbrainz")
+    cur.execute(query)
+    db.commit()
 
 
 def get_entities_with_wikilinks(query, limit):
@@ -83,28 +113,7 @@ def add_mbid_claim_to_item(pid, item, mbid, donefunc, simulate=False):
         donefunc(mbid)
 
 
-def mainloop(pid, create_processed_table_query, wiki_entity_query, donefunc):
-    create_table = False
-    simulate = False
-    limit = None
-
-    for arg in wp.handleArgs():
-        if arg == '-dryrun':
-            simulate = True
-        elif arg.startswith('-limit'):
-            limit = int(arg[len('-limit:'):])
-        elif arg == "-createtable":
-            create_table = True
-
-    const.WIKIDATA.login()
-    const.MUSICBRAINZ_CLAIM.setTarget(const.MUSICBRAINZ_WIKIDATAPAGE)
-    setup_db(create_processed_table_query, create_table)
-    results = get_entities_with_wikilinks(wiki_entity_query, limit)
-
-    if results.rowcount == 0:
-        wp.output("No more unprocessed entries in MB")
-        exit(0)
-
+def process_results(results, donefunc, pid, simulate):
     for index, (mbid, wikipage) in enumerate(results):
         try:
             itempage = get_wikidata_itempage_from_wikilink(wikipage)
@@ -128,3 +137,40 @@ def mainloop(pid, create_processed_table_query, wiki_entity_query, donefunc):
         wp.output("{mbid} is not linked in in Wikidata".format(
                     mbid=mbid))
         add_mbid_claim_to_item(pid, itempage, mbid, donefunc, simulate)
+
+
+def mainloop():
+    create_table = False
+    simulate = False
+    limit = None
+    entities = None
+
+    for arg in wp.handleArgs():
+        if arg == '-dryrun':
+            simulate = True
+        elif arg.startswith('-limit'):
+            limit = int(arg[len('-limit:'):])
+        elif arg == "-createtable":
+            create_table = True
+        elif arg.startswith("-entities"):
+            entities = arg[len("-entities:"):].split(",")
+
+    const.WIKIDATA.login()
+    const.MUSICBRAINZ_CLAIM.setTarget(const.MUSICBRAINZ_WIKIDATAPAGE)
+    setup_db()
+
+    for entitytype in entities:
+        property_id = const.PROPERTY_IDS[entitytype]
+        linkid = const.LINK_IDS[entitytype]
+        if create_table:
+            processed_table_query = create_processed_table_query(entitytype)
+            create_table(processed_table_query)
+        wiki_entity_query = create_url_mbid_query(entitytype, linkid)
+        donefunc = create_done_func(entitytype)
+        results = get_entities_with_wikilinks(wiki_entity_query, limit)
+
+        if results.rowcount == 0:
+            wp.output("No more unprocessed entries in MB")
+            continue
+
+        process_results(results, donefunc, property_id, simulate)
