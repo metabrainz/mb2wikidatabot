@@ -41,7 +41,7 @@ def create_done_func(entitytype):
 
 
 def create_processed_table_query(entitytype):
-    """Creates a specific query for `entitytype` and `linkid` from
+    """Creates a specific query for `entitytype` from
     `const.GENERIC_CREATE_PROCESSED_TABLE_QUERY`.
     """
     return const.GENERIC_CREATE_PROCESSED_TABLE_QUERY.format(etype=entitytype)
