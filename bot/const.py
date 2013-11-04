@@ -1,6 +1,9 @@
 import pywikibot as wp
 
 
+from collections import defaultdict
+
+
 WIKIDATA = wp.Site('wikidata', 'wikidata')
 WIKIDATA_DATASITE = WIKIDATA.data_repository()
 
@@ -71,25 +74,29 @@ GENERIC_CREATE_PROCESSED_TABLE_QUERY =\
 
     """
 
-MB_WIKI_WORKS_QUERY =\
-    """
-    SELECT w.gid, url.url
-    FROM l_url_work AS lwu
-    JOIN link AS l
-        ON lwu.link=l.id
-    JOIN link_type AS lt
-        ON lt.id=l.link_type
-    JOIN work AS w
-        ON entity1=w.id
-    JOIN url
-        ON lwu.entity0=url.id
-    LEFT JOIN bot_wikidata_work_processed AS bwwp
-        ON w.gid=bwwp.gid
-    WHERE
-        lt.id=279
-    AND
-        lwu.edits_pending=0
-    AND
-        bwwp.gid is NULL
-    LIMIT %s;
-    """
+QUERIES = defaultdict(lambda: None,
+    {
+        'work':
+        """
+        SELECT w.gid, url.url
+        FROM l_url_work AS lwu
+        JOIN link AS l
+            ON lwu.link=l.id
+        JOIN link_type AS lt
+            ON lt.id=l.link_type
+        JOIN work AS w
+            ON entity1=w.id
+        JOIN url
+            ON lwu.entity0=url.id
+        LEFT JOIN bot_wikidata_work_processed AS bwwp
+            ON w.gid=bwwp.gid
+        WHERE
+            lt.id=279
+        AND
+            lwu.edits_pending=0
+        AND
+            bwwp.gid is NULL
+        LIMIT %s;
+        """,
+    }
+)
