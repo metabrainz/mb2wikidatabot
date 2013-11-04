@@ -98,5 +98,43 @@ QUERIES = defaultdict(lambda: None,
             bwwp.gid is NULL
         LIMIT %s;
         """,
+        'area':
+        """
+        WITH valid_areas AS (
+            SELECT area
+            FROM place
+            UNION
+            SELECT area
+            FROM label
+            UNION
+            SELECT area
+            FROM artist
+            UNION
+            SELECT area
+            FROM country_area
+            JOIN release_country
+            ON release_country.country = country_area.area)
+        SELECT area.gid, url.url
+        FROM l_area_url
+        JOIN link AS l
+            ON l_area_url.link=l.id
+        JOIN link_type AS lt
+            ON lt.id=l.link_type
+        JOIN area
+            ON entity0=area.id
+        JOIN url
+            ON l_area_url.entity1=url.id
+        LEFT JOIN bot_wikidata_area_processed AS bwap
+            ON area.gid=bwap.gid
+        WHERE
+            lt.id=355
+        AND
+            l_area_url.edits_pending=0
+        AND
+            bwap.gid is NULL
+        AND
+            area.id IN (SELECT area FROM valid_areas)
+        LIMIT %s;
+        """
     }
 )
