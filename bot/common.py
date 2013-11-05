@@ -83,7 +83,7 @@ def get_wikidata_itempage_from_wikilink(wikilink):
     return wikidatapage
 
 
-def add_mbid_claim_to_item(pid, item, mbid, donefunc, simulate=False):
+def add_mbid_claim_to_item(pid, item, mbid, donefunc):
     """
     Adds a claim with pid `pid` with value `mbid` to `item` and call `donefunc`
     with `mbid` to signal the completion.
@@ -96,7 +96,7 @@ def add_mbid_claim_to_item(pid, item, mbid, donefunc, simulate=False):
     claim.setTarget(mbid)
     wp.output(u"Adding property {pid}, value {mbid} to {title}".format
               (pid=pid, mbid=mbid, title=item.title()))
-    if simulate:
+    if wp.config.simulate:
         wp.output("Simulation, no property has been added")
         return
     try:
@@ -113,7 +113,7 @@ def add_mbid_claim_to_item(pid, item, mbid, donefunc, simulate=False):
         donefunc(mbid)
 
 
-def process_results(results, donefunc, pid, simulate):
+def process_results(results, donefunc, pid):
     for index, (mbid, wikipage) in enumerate(results):
         try:
             itempage = get_wikidata_itempage_from_wikilink(wikipage)
@@ -136,18 +136,15 @@ def process_results(results, donefunc, pid, simulate):
 
         wp.output("{mbid} is not linked in in Wikidata".format(
                     mbid=mbid))
-        add_mbid_claim_to_item(pid, itempage, mbid, donefunc, simulate)
+        add_mbid_claim_to_item(pid, itempage, mbid, donefunc)
 
 
 def mainloop():
     create_table = False
-    simulate = False
     limit = None
     entities = None
 
     for arg in wp.handleArgs():
-        if arg == '-dryrun':
-            simulate = True
         elif arg.startswith('-limit'):
             limit = int(arg[len('-limit:'):])
         elif arg == "-createtable":
@@ -173,4 +170,4 @@ def mainloop():
             wp.output("No more unprocessed entries in MB")
             continue
 
-        process_results(results, donefunc, property_id, simulate)
+        process_results(results, donefunc, property_id)
