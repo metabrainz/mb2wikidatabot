@@ -23,11 +23,9 @@ def create_url_mbid_query(entitytype, linkid):
     """Creates a specific query for `entitytype` and `linkid` from
     `const.GENERIC_URL_MBID_QUERY`.
     """
-    if entitytype == "work":
-        # TODO the table for links from works to urls is called l_url_work, for
-        # all other entity types the table is called l_{type}_work. Find a
-        # better way than hardcoding this exception.
-        return const.MB_WIKI_WORKS_QUERY
+    custom = const.QUERIES[entitytype]
+    if custom is not None:
+        return custom
     return const.GENERIC_URL_MBID_QUERY.format(etype=entitytype, linkid=linkid)
 
 
