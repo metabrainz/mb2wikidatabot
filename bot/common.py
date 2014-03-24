@@ -143,7 +143,7 @@ def mainloop():
     entities = None
 
     for arg in wp.handleArgs():
-        elif arg.startswith('-limit'):
+        if arg.startswith('-limit'):
             limit = int(arg[len('-limit:'):])
         elif arg == "-createtable":
             create_table = True
