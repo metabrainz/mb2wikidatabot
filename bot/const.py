@@ -11,6 +11,7 @@ WIKIDATA_DATASITE = WIKIDATA.data_repository()
 PROPERTY_IDS = {
     "area": "P982",
     "artist": "P434",
+    "instrument": "P1330",
     "label": "P966",
     "place": "P1004",
     "release_group": "P436",
@@ -21,6 +22,7 @@ PROPERTY_IDS = {
 LINK_IDS = {
     "area": 355,
     "artist": 179,
+    "instrument": 731,
     "label": 216,
     "place": 595,
     "release_group": 89,
