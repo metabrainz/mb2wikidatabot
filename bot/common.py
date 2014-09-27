@@ -138,7 +138,7 @@ def process_results(results, donefunc, pid):
             donefunc(mbid)
             continue
 
-        wp.output("{mbid} is not linked in in Wikidata".format(
+        wp.output("{mbid} is not linked in Wikidata".format(
                   mbid=mbid))
         add_mbid_claim_to_item(pid, itempage, mbid, donefunc)
 
