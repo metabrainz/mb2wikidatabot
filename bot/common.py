@@ -19,14 +19,16 @@ class IsDisambigPage(Exception):
     pass
 
 
-def create_url_mbid_query(entitytype, linkid):
-    """Creates a specific query for `entitytype` and `linkid` from
+def create_url_mbid_query(entitytype, linkids):
+    """Creates a specific query for `entitytype` and `linkids` from
     `const.GENERIC_URL_MBID_QUERY`.
     """
     custom = const.QUERIES[entitytype]
     if custom is not None:
         return custom
-    return const.GENERIC_URL_MBID_QUERY.format(etype=entitytype, linkid=linkid)
+    return const.GENERIC_URL_MBID_QUERY.format(etype=entitytype,
+                                               wikipedia_linkid=linkids.wikipedia,
+                                               wikidata_linkid=linkids.wikidata)
 
 
 def create_done_func(entitytype):
@@ -67,13 +69,17 @@ def get_entities_with_wikilinks(query, limit):
 def get_wikidata_itempage_from_wikilink(wikilink):
     """Given a link to a wikipedia page, retrieve its page on Wikidata"""
     parsed_url = urlparse(wikilink)
-    pagename = parsed_url.path.replace(WIKI_PREFIX, "")
-    wikilanguage = parsed_url.netloc.split(".")[0]
-    wikisite = wp.Site(wikilanguage, "wikipedia")
-    enwikipage = wp.Page(wikisite, pagename)
-    if enwikipage.isDisambig():
-        raise IsDisambigPage()
-    wikidatapage = wp.ItemPage.fromPage(enwikipage)
+    if "wikipedia" in parsed_url.netloc:
+        pagename = parsed_url.path.replace(WIKI_PREFIX, "")
+        wikilanguage = parsed_url.netloc.split(".")[0]
+        wikisite = wp.Site(wikilanguage, "wikipedia")
+        enwikipage = wp.Page(wikisite, pagename)
+        if enwikipage.isDisambig():
+            raise IsDisambigPage()
+        wikidatapage = wp.ItemPage.fromPage(enwikipage)
+    elif "wikidata" in parsed_url.netloc:
+        pagename = parsed_url.path.replace(WIKI_PREFIX, "")
+        wikidatapage = wp.ItemPage(const.WIKIDATA_DATASITE, pagename)
     try:
         wikidatapage.get()
     except wp.NoPage as e:
@@ -156,11 +162,11 @@ def mainloop():
 
     for entitytype in entities:
         property_id = const.PROPERTY_IDS[entitytype]
-        linkid = const.LINK_IDS[entitytype]
+        linkids = const.LINK_IDS[entitytype]
         if create_table:
             processed_table_query = create_processed_table_query(entitytype)
             create_table(processed_table_query)
-        wiki_entity_query = create_url_mbid_query(entitytype, linkid)
+        wiki_entity_query = create_url_mbid_query(entitytype, linkids)
         donefunc = create_done_func(entitytype)
         results = get_entities_with_wikilinks(wiki_entity_query, limit)
 

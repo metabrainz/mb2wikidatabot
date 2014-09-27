@@ -1,11 +1,14 @@
 import pywikibot as wp
 
 
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 
 
 WIKIDATA = wp.Site('wikidata', 'wikidata')
 WIKIDATA_DATASITE = WIKIDATA.data_repository()
+
+
+LinkIDsTuple = namedtuple("LinkIDs", "wikipedia wikidata")
 
 
 PROPERTY_IDS = {
@@ -20,13 +23,13 @@ PROPERTY_IDS = {
 
 
 LINK_IDS = {
-    "area": 355,
-    "artist": 179,
-    "instrument": 731,
-    "label": 216,
-    "place": 595,
-    "release_group": 89,
-    "work": 279,
+    "area": LinkIDsTuple(355, 358),
+    "artist": LinkIDsTuple(179, 352),
+    "instrument": LinkIDsTuple(731, 733),
+    "label": LinkIDsTuple(216, 354),
+    "place": LinkIDsTuple(595, 594),
+    "release_group": LinkIDsTuple(89, 353),
+    "work": LinkIDsTuple(279, 351),
 }
 
 
@@ -48,7 +51,7 @@ GENERIC_URL_MBID_QUERY =\
     LEFT JOIN bot_wikidata_{etype}_processed AS bwep
         ON {etype}.gid=bwep.gid
     WHERE
-        lt.id={linkid}
+        lt.id IN ({wikipedia_linkid}, {wikidata_linkid})
     AND
         l_{etype}_url.edits_pending=0
     AND
@@ -93,7 +96,7 @@ QUERIES = defaultdict(lambda: None,
         LEFT JOIN bot_wikidata_work_processed AS bwwp
             ON w.gid=bwwp.gid
         WHERE
-            lt.id=279
+            lt.id IN (279, 351)
         AND
             lwu.edits_pending=0
         AND
@@ -145,7 +148,7 @@ QUERIES = defaultdict(lambda: None,
         LEFT JOIN bot_wikidata_area_processed AS bwap
             ON area.gid=bwap.gid
         WHERE
-            lt.id=355
+            lt.id IN (355, 358)
         AND
             l_area_url.edits_pending=0
         AND
