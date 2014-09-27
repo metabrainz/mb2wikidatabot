@@ -129,17 +129,17 @@ def process_results(results, donefunc, pid):
             continue
         if itempage is None:
             wp.debug(u"There's no wikidata page for {mbid}".format(mbid=mbid),
-                    layer="")
+                     layer="")
             continue
 
         if any(key.lower() == pid.lower() for key in itempage.claims.keys()):
             wp.output(u"{mbid} already has property {pid}".format(mbid=mbid,
-                                                                     pid=pid))
+                                                                  pid=pid))
             donefunc(mbid)
             continue
 
         wp.output("{mbid} is not linked in in Wikidata".format(
-                    mbid=mbid))
+                  mbid=mbid))
         add_mbid_claim_to_item(pid, itempage, mbid, donefunc)
 
 
