@@ -82,7 +82,7 @@ def get_wikidata_itempage_from_wikilink(wikilink):
         wikidatapage = wp.ItemPage(const.WIKIDATA_DATASITE, pagename)
     try:
         wikidatapage.get()
-    except wp.NoPage as e:
+    except wp.NoPage:
         return None
     return wikidatapage
 
