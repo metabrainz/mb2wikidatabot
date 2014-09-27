@@ -7,7 +7,6 @@ Usage: python2 run.py [options]
 Command line options:
 
 -createtable: Create the table storing the processed MBIDs
--dryrun: Don't write anything on the server
 -entites: A comma-separated list of entity types for which MBIDs are to be
           added to their Wikidata pages. Example: `-entities:artist,work,place`
 -limit:x: Only handle x entities of *each* type
