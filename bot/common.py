@@ -127,6 +127,9 @@ def process_results(results, donefunc, pid):
         except IsDisambigPage:
             wp.output("{page} is a disambiguation page".format(page=wikipage))
             continue
+        except wp.IsRedirectPage:
+            wp.output("{page} is a redirect".format(page=wikipage))
+            continue
         if itempage is None:
             wp.debug(u"There's no wikidata page for {mbid}".format(mbid=mbid),
                      layer="")
