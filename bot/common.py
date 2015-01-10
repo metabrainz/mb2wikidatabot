@@ -76,7 +76,10 @@ def get_wikidata_itempage_from_wikilink(wikilink):
         enwikipage = wp.Page(wikisite, pagename)
         if enwikipage.isDisambig():
             raise IsDisambigPage()
-        wikidatapage = wp.ItemPage.fromPage(enwikipage)
+        try:
+            wikidatapage = wp.ItemPage.fromPage(enwikipage)
+        except wp.NoPage:
+            return None
     elif "wikidata" in parsed_url.netloc:
         pagename = parsed_url.path.replace(WIKI_PREFIX, "")
         wikidatapage = wp.ItemPage(const.WIKIDATA_DATASITE, pagename)
