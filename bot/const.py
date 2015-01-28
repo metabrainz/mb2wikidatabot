@@ -38,7 +38,7 @@ MUSICBRAINZ_CLAIM = wp.Claim(WIKIDATA_DATASITE, "P248")
 
 GENERIC_URL_MBID_QUERY =\
     """
-    SELECT {etype}.gid, url.url
+    SELECT {etype}.gid, url.gid, url.url
     FROM l_{etype}_url
     JOIN link AS l
         ON l_{etype}_url.link=l.id
@@ -83,7 +83,7 @@ QUERIES = defaultdict(lambda: None,
     {
         'work':
         """
-        SELECT w.gid, url.url
+        SELECT w.gid, url.gid, url.url
         FROM l_url_work AS lwu
         JOIN link AS l
             ON lwu.link=l.id
@@ -135,7 +135,7 @@ QUERIES = defaultdict(lambda: None,
             SELECT entity0
             FROM l_area_work
             )
-        SELECT area.gid, url.url
+        SELECT area.gid, url.gid, url.url
         FROM l_area_url
         JOIN link AS l
             ON l_area_url.link=l.id
