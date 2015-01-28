@@ -6,7 +6,11 @@ import pywikibot as wp
 
 
 from . import const, settings
-from .musicbrainz_bot import editing
+if settings.mb_user is None or settings.mb_password is None:
+    wp.output("No MusicBrainz login data, no redirects will be fixed")
+    editing = None
+else:
+    from .musicbrainz_bot import editing
 from urlparse import urlparse
 
 
@@ -104,7 +108,7 @@ class Bot(object):
     edit_note = "Replacing %s which redirects to %s with the latter"
 
     def __init__(self):
-        if settings.mb_user is None or settings.mb_password is None:
+        if editing is None:
             self.client = None
         else:
             self.client = editing.MusicBrainzClient(settings.mb_user,
