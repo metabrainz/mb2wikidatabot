@@ -25,6 +25,7 @@ If you want the bot to automatically edit URLs to redirect pages in Wikipedia to
 their target pages, do
 
 > git submodule init
+>
 > git submodule update
 
 and set the `mb_user` and `mb_password` values in `bot/settings.py` to your bots
