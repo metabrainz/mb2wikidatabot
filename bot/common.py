@@ -105,7 +105,7 @@ def get_wikidata_itempage_from_wikilink(wikilink):
 
 
 class Bot(object):
-    edit_note = "Replacing %s which redirects to %s with the latter"
+    edit_note = "%s is only a redirect to %s"
 
     def __init__(self):
         if editing is None:
