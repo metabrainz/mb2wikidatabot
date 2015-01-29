@@ -90,6 +90,8 @@ def get_wikidata_itempage_from_wikilink(wikilink):
         enwikipage = wp.Page(wikisite, pagename)
         if enwikipage.isRedirectPage():
             target = enwikipage.getRedirectTarget()
+            if target.isDisambig():
+                raise IsDisambigPage()
             raise IsRedirectPage(wikilink, target.full_url())
         if enwikipage.isDisambig():
             raise IsDisambigPage()
