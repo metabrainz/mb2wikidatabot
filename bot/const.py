@@ -55,6 +55,8 @@ GENERIC_URL_MBID_QUERY =\
     AND
         l_{etype}_url.edits_pending=0
     AND
+        url.edits_pending=0
+    AND
         bwep.gid is NULL
     LIMIT %s;
     """
@@ -100,8 +102,11 @@ QUERIES = defaultdict(lambda: None,
         AND
             lwu.edits_pending=0
         AND
+            url.edits_pending=0
+        AND
             bwwp.gid is NULL
         LIMIT %s;
+
         """,
         'area':
         """
@@ -153,6 +158,8 @@ QUERIES = defaultdict(lambda: None,
             l_area_url.edits_pending=0
         AND
             bwap.gid is NULL
+        AND
+            url.edits_pending=0
         AND
             area.id IN (SELECT area FROM valid_areas)
         LIMIT %s;
