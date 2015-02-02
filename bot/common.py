@@ -193,8 +193,6 @@ class Bot(object):
         except IsRedirectPage as e:
             wp.output("{page} is a redirect".format(page=wikipage))
             self.fix_redirect(url_gid, e.old, e.new)
-            result = (entity_gid, url_gid, e.new)
-            self.process_result(result)
             return
 
         if itempage is None:
