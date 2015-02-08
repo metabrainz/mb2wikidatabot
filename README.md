@@ -33,5 +33,3 @@ login data in MusicBrainz.
 
 Please make sure that your bot does not violate the
 [Code of Conduct](https://musicbrainz.org/doc/Code_of_Conduct/Bots) for bots in MusicBrainz
-
-To use the `stats.py` file which generates a plot of the number of entries linked in Wikidata you also need [matplotlib](http://matplotlib.org/) and [brewer2mpl](https://github.com/jiffyclub/brewer2mpl).
