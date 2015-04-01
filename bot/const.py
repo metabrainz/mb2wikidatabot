@@ -18,6 +18,7 @@ PROPERTY_IDS = {
     "label": "P966",
     "place": "P1004",
     "release_group": "P436",
+    "series": "P1407",
     "work": "P435",
 }
 
@@ -29,6 +30,7 @@ LINK_IDS = {
     "label": LinkIDsTuple(216, 354),
     "place": LinkIDsTuple(595, 594),
     "release_group": LinkIDsTuple(89, 353),
+    "series": LinkIDsTuple(744, 749),
     "work": LinkIDsTuple(279, 351),
 }
 
