@@ -216,7 +216,7 @@ def mainloop():
     limit = None
     entities = None
 
-    for arg in wp.handleArgs():
+    for arg in wp.handle_args():
         if arg.startswith('-limit'):
             limit = int(arg[len('-limit:'):])
         elif arg == "-createtable":
