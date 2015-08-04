@@ -200,9 +200,13 @@ class Bot(object):
                      layer="")
             return
 
-        if any(key.lower() == self.property_id.lower() for key in itempage.claims.keys()):
-            wp.output(u"{mbid} already has property {pid}".format(mbid=entity_gid,
-                                                                  pid=self.property_id))
+        if any((key.lower() == self.property_id.lower() and
+               claim.target == entity_gid)
+               for key, claims in itempage.claims.items() for claim in claims):
+            wp.output(u"{page} already has property {pid} with value {mbid}".
+                      format(page=wikipage,
+                             mbid=entity_gid,
+                             pid=self.property_id))
             self.donefunc(entity_gid)
             return
 
