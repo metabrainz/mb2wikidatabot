@@ -1,3 +1,4 @@
+# coding: utf-8
 import psycopg2 as pg
 import psycopg2.extensions
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
@@ -133,6 +134,7 @@ class Bot(object):
         self.donefunc = create_done_func(new_type)
         self.linkids = const.LINK_IDS[new_type]
         self.property_id = const.PROPERTY_IDS[new_type]
+        self._current_entity_type = new_type
 
     def add_mbid_claim_to_item(self, item, mbid):
         """
@@ -182,6 +184,11 @@ class Bot(object):
 
     def process_result(self, result):
         entity_gid, url_gid, wikipage = result
+        wp.output("» {wp} https://musicbrainz.org/{entitytype}/{gid}".format(
+            entitytype=self._current_entity_type,
+            wp=wikipage,
+            gid=entity_gid
+        ))
         try:
             itempage = get_wikidata_itempage_from_wikilink(wikipage)
         except wp.NoSuchSite:
