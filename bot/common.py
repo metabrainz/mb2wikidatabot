@@ -185,7 +185,7 @@ class Bot(object):
     def process_result(self, result):
         entity_gid, url_gid, wikipage = result
         wp.output("» {wp} https://musicbrainz.org/{entitytype}/{gid}".format(
-            entitytype=self._current_entity_type,
+            entitytype=self._current_entity_type.replace("_", "-"),
             wp=wikipage,
             gid=entity_gid
         ))
