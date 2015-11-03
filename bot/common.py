@@ -104,6 +104,8 @@ def get_wikidata_itempage_from_wikilink(wikilink):
     elif "wikidata" in parsed_url.netloc:
         pagename = parsed_url.path.replace(WIKI_PREFIX, "")
         wikidatapage = wp.ItemPage(const.WIKIDATA_DATASITE, pagename)
+    else:
+        raise ValueError("%s is not a link to a wikipedia page" % wikilink)
     try:
         wikidatapage.get()
     except wp.NoPage:
@@ -200,6 +202,9 @@ class Bot(object):
         except IsRedirectPage as e:
             wp.output("{page} is a redirect".format(page=wikipage))
             self.fix_redirect(url_gid, e.old, e.new)
+            return
+        except ValueError as e:
+            wp.output(e)
             return
 
         if itempage is None:
