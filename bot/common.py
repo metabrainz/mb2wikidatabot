@@ -81,6 +81,15 @@ def get_entities_with_wikilinks(query, limit):
     return cur
 
 
+def check_redirect_and_disambig(wikilink, page):
+    """Check if `page` is a redirect or disambiguation page"""
+    if page.isRedirectPage():
+        page = page.getRedirectTarget()
+        raise IsRedirectPage(wikilink, page.full_url())
+    if page.isDisambig():
+        raise IsDisambigPage()
+
+
 def get_wikidata_itempage_from_wikilink(wikilink):
     """Given a link to a wikipedia page, retrieve its page on Wikidata"""
     parsed_url = urlparse(wikilink)
@@ -89,13 +98,7 @@ def get_wikidata_itempage_from_wikilink(wikilink):
         wikilanguage = parsed_url.netloc.split(".")[0]
         wikisite = wp.Site(wikilanguage, "wikipedia")
         enwikipage = wp.Page(wikisite, pagename)
-        if enwikipage.isRedirectPage():
-            target = enwikipage.getRedirectTarget()
-            if target.isDisambig():
-                raise IsDisambigPage()
-            raise IsRedirectPage(wikilink, target.full_url())
-        if enwikipage.isDisambig():
-            raise IsDisambigPage()
+        check_redirect_and_disambig(wikilink, enwikipage)
         try:
             wikidatapage = wp.ItemPage.fromPage(enwikipage)
         except wp.NoPage:
@@ -104,6 +107,7 @@ def get_wikidata_itempage_from_wikilink(wikilink):
     elif "wikidata" in parsed_url.netloc:
         pagename = parsed_url.path.replace(WIKI_PREFIX, "")
         wikidatapage = wp.ItemPage(const.WIKIDATA_DATASITE, pagename)
+        check_redirect_and_disambig(wikilink, wikidatapage)
     else:
         raise ValueError("%s is not a link to a wikipedia page" % wikilink)
     try:
