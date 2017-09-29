@@ -59,6 +59,12 @@ GENERIC_URL_MBID_QUERY =\
     LIMIT %s;
     """
 
+GENERIC_ALREADY_PROCESSED_QUERY =\
+    """
+    SELECT gid
+    FROM bot_wikidata_{etype}_processed;
+    """
+
 GENERIC_DONE_QUERY =\
     """
     INSERT INTO bot_wikidata_{etype}_processed (GID)

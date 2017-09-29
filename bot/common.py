@@ -47,6 +47,14 @@ def create_url_mbid_query(entitytype, linkids):
                                                wikidata_linkid=linkids.wikidata)
 
 
+def create_already_processed_query(entitytype):
+    """Creates a specific query for `entitytype` from
+    `CONST.GENERIC_ALREADY_PROCESSED_QUERY`
+
+    """
+    return const.GENERIC_ALREADY_PROCESSED_QUERY.format(etype=entitytype)
+
+
 def create_done_func(entitytype):
     """Creates a specific function for `entitytype` from
     `const.GENERIC_DONE_QUERY`.
@@ -79,9 +87,17 @@ def create_table(query):
     readwrite_db.commit()
 
 
-def get_entities_with_wikilinks(query, limit):
+def do_readonly_query(query, limit):
+    """Perform `query` against the read only database."""
     cur = readonly_db.cursor()
     cur.execute(query, (limit,))
+    return cur
+
+
+def do_readwrite_query(query):
+    """Perform `query` against the read-write database."""
+    cur = readonly_db.cursor()
+    cur.execute(query)
     return cur
 
 
@@ -259,11 +275,17 @@ def mainloop():
         if create_table:
             processed_table_query = create_processed_table_query(entitytype)
             create_table(processed_table_query)
-        wiki_entity_query = create_url_mbid_query(entitytype, linkids)
-        results = get_entities_with_wikilinks(wiki_entity_query, limit)
 
-        if results.rowcount == 0:
+        wiki_entity_query = create_url_mbid_query(entitytype, linkids)
+        all_results = do_readonly_query(wiki_entity_query, limit)
+        already_processed_query = create_already_processed_query(entitytype)
+        already_processed_results = do_readwrite_query(already_processed_query)
+
+        results_to_process = [r for r in all_results if r[0] not in
+                              already_processed_results]
+
+        if all_results.rowcount == 0:
             wp.output("No more unprocessed entries in MB")
             continue
 
-        map(bot.process_result, results)
+        map(bot.process_result, results_to_process)
