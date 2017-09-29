@@ -278,7 +278,8 @@ def mainloop():
         wiki_entity_query = create_url_mbid_query(entitytype, linkids)
         all_results = do_readonly_query(wiki_entity_query, limit)
         already_processed_query = create_already_processed_query(entitytype)
-        already_processed_results = do_readwrite_query(already_processed_query)
+        already_processed_results = frozenset(
+            do_readwrite_query(already_processed_query))
 
         results_to_process = [r for r in all_results if r[0] not in
                               already_processed_results]
