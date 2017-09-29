@@ -50,16 +50,12 @@ GENERIC_URL_MBID_QUERY =\
         ON entity0={etype}.id
     JOIN url
         ON l_{etype}_url.entity1=url.id
-    LEFT JOIN bot_wikidata_{etype}_processed AS bwep
-        ON {etype}.gid=bwep.gid
     WHERE
         lt.id IN ({wikipedia_linkid}, {wikidata_linkid})
     AND
         l_{etype}_url.edits_pending=0
     AND
         url.edits_pending=0
-    AND
-        bwep.gid is NULL
     LIMIT %s;
     """
 
@@ -97,16 +93,12 @@ QUERIES = defaultdict(lambda: None,
             ON entity1=w.id
         JOIN url
             ON lwu.entity0=url.id
-        LEFT JOIN bot_wikidata_work_processed AS bwwp
-            ON w.gid=bwwp.gid
         WHERE
             lt.id IN (279, 351)
         AND
             lwu.edits_pending=0
         AND
             url.edits_pending=0
-        AND
-            bwwp.gid is NULL
         LIMIT %s;
 
         """,
@@ -152,8 +144,6 @@ QUERIES = defaultdict(lambda: None,
             ON entity0=area.id
         JOIN url
             ON l_area_url.entity1=url.id
-        LEFT JOIN bot_wikidata_area_processed AS bwap
-            ON area.gid=bwap.gid
         WHERE
             lt.id IN (355, 358)
         AND
