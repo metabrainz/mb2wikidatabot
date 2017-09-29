@@ -19,6 +19,7 @@ WIKI_PREFIX = "/wiki/"
 
 
 readonly_db = None
+readwrite_db = None
 
 
 class IsDisambigPage(Exception):
@@ -51,7 +52,7 @@ def create_done_func(entitytype):
     `const.GENERIC_DONE_QUERY`.
     """
     query = const.GENERIC_DONE_QUERY.format(etype=entitytype)
-    func = lambda mbid: readonly_db.cursor().execute(query, {'mbid': mbid})
+    func = lambda mbid: readwrite_db.cursor().execute(query, {'mbid': mbid})
     return func
 
 
@@ -66,13 +67,16 @@ def setup_db():
     global readonly_db
     readonly_db = pg.connect(settings.readonly_connection_string)
     readonly_db.autocommit = True
+    global readwrite_db
+    readwrite_db = pg.connect(settings.readonly_connection_string)
+    readwrite_db.autocommit = True
 
 
 def create_table(query):
-    cur = readonly_db.cursor()
+    cur = readwrite_db.cursor()
     cur.execute("SET search_path TO musicbrainz")
     cur.execute(query)
-    readonly_db.commit()
+    readwrite_db.commit()
 
 
 def get_entities_with_wikilinks(query, limit):

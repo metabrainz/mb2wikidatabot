@@ -18,8 +18,14 @@ the latter with
 > python2 setup.py install
 
 Copy `bot/settings.py.dist` to `bot/settings.py` and edit the connection string
-which is documented
+settings. Their format is
+documented
 [here](http://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-CONNSTRING).
+
+The `readonly_connection_string` is used to connect to a MusicBrainz database to
+extract all the entities that have links to Wikipedia articles. The `readwrite`
+connection string is used to connect to a database with read and write access to
+keep a log of all already processed MBIDs.
 
 If you want the bot to automatically edit URLs to redirect pages in Wikipedia to
 their target pages, do
