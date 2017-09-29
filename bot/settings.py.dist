@@ -1,3 +1,3 @@
-connection_string="dbname=musicbrainz user=musicbrainz"
+readonly_connection_string="dbname=musicbrainz user=musicbrainz"
 mb_user=None
 mb_password=None
