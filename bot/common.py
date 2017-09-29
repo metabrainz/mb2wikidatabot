@@ -82,7 +82,6 @@ def setup_db():
 
 def create_table(query):
     cur = readwrite_db.cursor()
-    cur.execute("SET search_path TO musicbrainz")
     cur.execute(query)
     readwrite_db.commit()
 
