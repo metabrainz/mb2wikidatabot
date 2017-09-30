@@ -2,3 +2,4 @@ readonly_connection_string="dbname=musicbrainz user=musicbrainz"
 readwrite_connection_string="dbname=musicbrainz user=musicbrainz"
 mb_user=None
 mb_password=None
+sleep_time_in_seconds = 3600

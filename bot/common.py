@@ -12,6 +12,7 @@ if settings.mb_user is None or settings.mb_password is None:
     editing = None
 else:
     from .musicbrainz_bot import editing
+from time import sleep
 from urlparse import urlparse
 
 
@@ -250,6 +251,31 @@ class Bot(object):
         self.add_mbid_claim_to_item(itempage, entity_gid)
 
 
+def entity_type_loop(bot, entitytype, limit):
+    """Processes up to `limit` entities of type `entitytype`.
+
+    :param bot Bot:
+    :param entitytype str:
+    :param limit int:
+    """
+    bot.current_entity_type = entitytype
+    linkids = const.LINK_IDS[entitytype]
+
+    wiki_entity_query = create_url_mbid_query(entitytype, linkids)
+    all_results = do_readonly_query(wiki_entity_query, limit)
+    already_processed_query = create_already_processed_query(entitytype)
+    already_processed_results = frozenset(
+           do_readwrite_query(already_processed_query))
+
+    results_to_process = [r for r in all_results if r[0] not in
+                          already_processed_results]
+
+    if all_results.rowcount == 0:
+        wp.output("No more unprocessed entries in MB")
+
+    map(bot.process_result, results_to_process)
+
+
 def mainloop():
     create_table = False
     limit = None
@@ -267,25 +293,14 @@ def mainloop():
     const.MUSICBRAINZ_CLAIM.setTarget(const.MUSICBRAINZ_WIKIDATAPAGE)
     setup_db()
 
-    bot = Bot()
     for entitytype in entities:
-        bot.current_entity_type = entitytype
-        linkids = const.LINK_IDS[entitytype]
         if create_table:
             processed_table_query = create_processed_table_query(entitytype)
             create_table(processed_table_query)
 
-        wiki_entity_query = create_url_mbid_query(entitytype, linkids)
-        all_results = do_readonly_query(wiki_entity_query, limit)
-        already_processed_query = create_already_processed_query(entitytype)
-        already_processed_results = frozenset(
-            do_readwrite_query(already_processed_query))
+    bot = Bot()
 
-        results_to_process = [r for r in all_results if r[0] not in
-                              already_processed_results]
-
-        if all_results.rowcount == 0:
-            wp.output("No more unprocessed entries in MB")
-            continue
-
-        map(bot.process_result, results_to_process)
+    while True:
+        for entitytype in entities:
+            entity_type_loop(bot, entitytype, limit)
+        sleep(settings.sleep_time_in_seconds)
