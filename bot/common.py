@@ -20,6 +20,7 @@ from urlparse import urlparse
 
 # Set up a signal handler to reload the settings on SIGHUP
 def signal_handler(signal, frame):
+    wp.output("HUP received")
     reload(settings)
     setup_db()
 
