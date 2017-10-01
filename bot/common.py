@@ -301,7 +301,6 @@ def entity_type_loop(bot, entitytype, limit):
 
 
 def mainloop():
-    create_table = False
     limit = None
     entities = sorted(const.PROPERTY_IDS.keys())
 
