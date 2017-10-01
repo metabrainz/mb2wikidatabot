@@ -17,19 +17,9 @@ the latter with
 >
 > python2 setup.py install
 
-After installation configure pywikibot so the login works non-interactively. The
-documentation for that can be
-found
-[here](https://www.mediawiki.org/wiki/Manual:Pywikibot/Installation#Configure_Pywikibot).
-Minimally, you'll have a file `user-config.py` and one called `passwd` in the
-folder you intend to run `mb2wikidata` in. `user-config.py` should contain
+After installation configure pywikibot so the login works non-interactively. This repository is made to work with the `MineoBot` user on Wikidata. Its password needs to be stored in a file called `passwd` with the following content:
 
-> usernames['wikidata']['wikidata'] = u'&lt;bot-username-here&gt;'
-> password_file = 'passwd'
-
-`passwd` should contain
-
-> ('&lt;bot-username-here&gt;', '&lt;bot-password-here&gt;')
+> ('MineoBot', '&lt;bot-password-here&gt;')
 
 Copy `bot/settings.py.dist` to `bot/settings.py` and edit the connection string
 settings. Their format is
