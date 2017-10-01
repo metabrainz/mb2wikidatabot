@@ -4,8 +4,8 @@
 
 {{if service "postgres-master"}}
 {{with index (service "postgres-master") 0}}
-readonly_connection_string="dbname=musicbrainz user=musicbrainz host={{.Address}} port={{.Port}}"
-readwrite_connection_string="dbname=musicbrainz user=musicbrainz_ro host={{.Address}} port={{.Port}}"
+readonly_connection_string="dbname=musicbrainz_db user=musicbrainz host={{.Address}} port={{.Port}}"
+readwrite_connection_string="dbname=musicbrainz_db user=musicbrainz_ro host={{.Address}} port={{.Port}}"
 {{end}}
 {{end}}
 

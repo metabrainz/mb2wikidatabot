@@ -1,4 +1,5 @@
 # coding: utf-8
+from time import sleep
 import psycopg2 as pg
 import psycopg2.extensions
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
@@ -7,7 +8,14 @@ import pywikibot as wp
 import signal
 
 
-from . import const, settings
+while True:
+    try:
+        from . import const, settings
+        break
+    except ImportError:
+        wp.output("No config info available yet. Sleeping 2 seconds.")
+        sleep(2)
+        
 if settings.mb_user is None or settings.mb_password is None:
     wp.output("No MusicBrainz login data, no redirects will be fixed")
     editing = None
