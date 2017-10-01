@@ -17,6 +17,10 @@ the latter with
 >
 > python2 setup.py install
 
+After installation configure pywikibot so the login works non-interactively. This repository is made to work with the `MineoBot` user on Wikidata. Its password needs to be stored in a file called `passwd` with the following content:
+
+> ('MineoBot', '&lt;bot-password-here&gt;')
+
 Copy `bot/settings.py.dist` to `bot/settings.py` and edit the connection string
 settings. Their format is
 documented

@@ -295,7 +295,7 @@ def entity_type_loop(bot, entitytype, limit):
 def mainloop():
     create_table = False
     limit = None
-    entities = None
+    entities = sorted(const.PROPERTY_IDS.keys())
 
     for arg in wp.handle_args():
         if arg.startswith('-limit'):
@@ -305,18 +305,18 @@ def mainloop():
         elif arg.startswith("-entities"):
             entities = arg[len("-entities:"):].split(",")
 
-    const.WIKIDATA.login()
     const.MUSICBRAINZ_CLAIM.setTarget(const.MUSICBRAINZ_WIKIDATAPAGE)
     setup_db()
 
-    for entitytype in entities:
-        if create_table:
+    if create_table:
+        for entitytype in entities:
             processed_table_query = create_processed_table_query(entitytype)
             create_table(processed_table_query)
 
     bot = Bot()
 
     while True:
+        const.WIKIDATA.login()
         for entitytype in entities:
             entity_type_loop(bot, entitytype, limit)
         sleep(settings.sleep_time_in_seconds)
