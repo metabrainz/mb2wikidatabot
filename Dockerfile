@@ -38,3 +38,5 @@ COPY ./docker/consul-template.conf /etc/consul-template.conf
 COPY ./docker/wikidata-bot.service /etc/service/wikidata-bot/run
 RUN chmod 755 /etc/service/wikidata-bot/run
 RUN chmod 755 /code/run.py
+
+ENV PYWIKIBOT2_NO_USER_CONFIG 1

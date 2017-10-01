@@ -2,16 +2,16 @@
     {{ key (printf "docker-server-configs/wikidata-bot/config.%s.json/%s" (env "DEPLOY_ENV") .) }}
 {{- end -}}
 
-{{if service "postgres-master"}
+{{if service "postgres-master"}}
 {{with index (service "postgres-master") 0}}
-    readonly_connection_string="dbname=musicbrainz user=musicbrainz host={{.Address}} port={{.Port}}"
-    readwrite_connection_string="dbname=musicbrainz user=musicbrainz_ro host={{.Address}} port={{.Port}}"
+readonly_connection_string="dbname=musicbrainz user=musicbrainz host={{.Address}} port={{.Port}}"
+readwrite_connection_string="dbname=musicbrainz user=musicbrainz_ro host={{.Address}} port={{.Port}}"
 {{end}}
-{end}}
+{{end}}
 
 # mb_user and mb_password are only required if the bot should fix links to
 # redirect pages in MusicBrainz. If that is not desired, leave them as `None`.
-mb_user={{template "KEY" "mb_user"}}
-mb_password={{template "KEY" "mb_password"}}
+mb_user="{{template "KEY" "mb_user"}}"
+mb_password="{{template "KEY" "mb_password"}}"
 
 sleep_time_in_seconds = 3600

@@ -1,0 +1,5 @@
+{{- define "KEY" -}}
+    {{ key (printf "docker-server-configs/wikidata-bot/config.%s.json/%s" (env "DEPLOY_ENV") .) }}
+{{- end -}}
+
+('MineoBot', '{{template "KEY" "wd_password"}}')
