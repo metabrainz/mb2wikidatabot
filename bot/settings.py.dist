@@ -1,3 +1,8 @@
-connection_string="dbname=musicbrainz user=musicbrainz"
+readonly_connection_string="dbname=musicbrainz user=musicbrainz"
+readwrite_connection_string="dbname=musicbrainz user=musicbrainz"
+sleep_time_in_seconds = 3600
+
+# mb_user and mb_password are only required if the bot should fix links to
+# redirect pages in MusicBrainz. If that is not desired, leave them as `None`.
 mb_user=None
 mb_password=None

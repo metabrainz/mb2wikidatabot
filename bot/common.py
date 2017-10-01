@@ -4,6 +4,7 @@ import psycopg2.extensions
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 import pywikibot as wp
+import signal
 
 
 from . import const, settings
@@ -12,13 +13,25 @@ if settings.mb_user is None or settings.mb_password is None:
     editing = None
 else:
     from .musicbrainz_bot import editing
+from time import sleep
 from urlparse import urlparse
+
+
+# Set up a signal handler to reload the settings on SIGHUP
+def signal_handler(signal, frame):
+    wp.output("HUP received")
+    reload(settings)
+    setup_db()
+
+
+signal.signal(signal.SIGHUP, signal_handler)
 
 
 WIKI_PREFIX = "/wiki/"
 
 
-db = None
+readonly_db = None
+readwrite_db = None
 
 
 class IsDisambigPage(Exception):
@@ -46,12 +59,20 @@ def create_url_mbid_query(entitytype, linkids):
                                                wikidata_linkid=linkids.wikidata)
 
 
+def create_already_processed_query(entitytype):
+    """Creates a specific query for `entitytype` from
+    `CONST.GENERIC_ALREADY_PROCESSED_QUERY`
+
+    """
+    return const.GENERIC_ALREADY_PROCESSED_QUERY.format(etype=entitytype)
+
+
 def create_done_func(entitytype):
     """Creates a specific function for `entitytype` from
     `const.GENERIC_DONE_QUERY`.
     """
     query = const.GENERIC_DONE_QUERY.format(etype=entitytype)
-    func = lambda mbid: db.cursor().execute(query, {'mbid': mbid})
+    func = lambda mbid: readwrite_db.cursor().execute(query, {'mbid': mbid})
     return func
 
 
@@ -63,21 +84,36 @@ def create_processed_table_query(entitytype):
 
 
 def setup_db():
-    global db
-    db = pg.connect(settings.connection_string)
-    db.autocommit = True
+    global readonly_db
+    if readonly_db is not None:
+        readonly_db.close()
+    readonly_db = pg.connect(settings.readonly_connection_string)
+    readonly_db.autocommit = True
+
+    global readwrite_db
+    if readwrite_db is not None:
+        readonly_db.close()
+    readwrite_db = pg.connect(settings.readonly_connection_string)
+    readwrite_db.autocommit = True
 
 
 def create_table(query):
-    cur = db.cursor()
-    cur.execute("SET search_path TO musicbrainz")
+    cur = readwrite_db.cursor()
     cur.execute(query)
-    db.commit()
+    readwrite_db.commit()
 
 
-def get_entities_with_wikilinks(query, limit):
-    cur = db.cursor()
+def do_readonly_query(query, limit):
+    """Perform `query` against the read only database."""
+    cur = readonly_db.cursor()
     cur.execute(query, (limit,))
+    return cur
+
+
+def do_readwrite_query(query):
+    """Perform `query` against the read-write database."""
+    cur = readonly_db.cursor()
+    cur.execute(query)
     return cur
 
 
@@ -231,6 +267,31 @@ class Bot(object):
         self.add_mbid_claim_to_item(itempage, entity_gid)
 
 
+def entity_type_loop(bot, entitytype, limit):
+    """Processes up to `limit` entities of type `entitytype`.
+
+    :param bot Bot:
+    :param entitytype str:
+    :param limit int:
+    """
+    bot.current_entity_type = entitytype
+    linkids = const.LINK_IDS[entitytype]
+
+    wiki_entity_query = create_url_mbid_query(entitytype, linkids)
+    all_results = do_readonly_query(wiki_entity_query, limit)
+    already_processed_query = create_already_processed_query(entitytype)
+    already_processed_results = frozenset(
+           do_readwrite_query(already_processed_query))
+
+    results_to_process = [r for r in all_results if r[0] not in
+                          already_processed_results]
+
+    if len(results_to_process) == 0:
+        wp.output("No more unprocessed entries in MB")
+
+    map(bot.process_result, results_to_process)
+
+
 def mainloop():
     create_table = False
     limit = None
@@ -248,18 +309,14 @@ def mainloop():
     const.MUSICBRAINZ_CLAIM.setTarget(const.MUSICBRAINZ_WIKIDATAPAGE)
     setup_db()
 
-    bot = Bot()
     for entitytype in entities:
-        bot.current_entity_type = entitytype
-        linkids = const.LINK_IDS[entitytype]
         if create_table:
             processed_table_query = create_processed_table_query(entitytype)
             create_table(processed_table_query)
-        wiki_entity_query = create_url_mbid_query(entitytype, linkids)
-        results = get_entities_with_wikilinks(wiki_entity_query, limit)
 
-        if results.rowcount == 0:
-            wp.output("No more unprocessed entries in MB")
-            continue
+    bot = Bot()
 
-        map(bot.process_result, results)
+    while True:
+        for entitytype in entities:
+            entity_type_loop(bot, entitytype, limit)
+        sleep(settings.sleep_time_in_seconds)
