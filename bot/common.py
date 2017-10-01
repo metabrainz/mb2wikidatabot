@@ -300,18 +300,15 @@ def mainloop():
     for arg in wp.handle_args():
         if arg.startswith('-limit'):
             limit = int(arg[len('-limit:'):])
-        elif arg == "-createtable":
-            create_table = True
         elif arg.startswith("-entities"):
             entities = arg[len("-entities:"):].split(",")
 
     const.MUSICBRAINZ_CLAIM.setTarget(const.MUSICBRAINZ_WIKIDATAPAGE)
     setup_db()
 
-    if create_table:
-        for entitytype in entities:
-            processed_table_query = create_processed_table_query(entitytype)
-            create_table(processed_table_query)
+    for entitytype in entities:
+        processed_table_query = create_processed_table_query(entitytype)
+        create_table(processed_table_query)
 
     bot = Bot()
 

@@ -78,7 +78,7 @@ GENERIC_DONE_QUERY =\
 
 GENERIC_CREATE_PROCESSED_TABLE_QUERY =\
     """
-    CREATE TABLE bot_wikidata_{etype}_processed (
+    CREATE TABLE IF NOT EXISTS bot_wikidata_{etype}_processed (
         gid uuid NOT NULL PRIMARY KEY,
         processed timestamp with time zone DEFAULT now()
     );
