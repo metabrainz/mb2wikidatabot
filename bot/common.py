@@ -308,8 +308,8 @@ def mainloop():
     const.MUSICBRAINZ_CLAIM.setTarget(const.MUSICBRAINZ_WIKIDATAPAGE)
     setup_db()
 
-    for entitytype in entities:
-        if create_table:
+    if create_table:
+        for entitytype in entities:
             processed_table_query = create_processed_table_query(entitytype)
             create_table(processed_table_query)
 
