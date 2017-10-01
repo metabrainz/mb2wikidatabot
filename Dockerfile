@@ -32,10 +32,9 @@ COPY . /code
 RUN pip install -r requirements.txt
 RUN pip install setuptools
 
-WORKDIR /code/listenbrainz
-
 # Consul Template service is already set up with the base image.
 # Just need to copy the configuration.
 COPY ./docker/consul-template.conf /etc/consul-template.conf
 COPY ./docker/wikidata-bot.service /etc/service/wikidata-bot/run
 RUN chmod 755 /etc/service/wikidata-bot/run
+RUN chmod 755 /code/run.py
