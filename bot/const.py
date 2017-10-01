@@ -155,8 +155,6 @@ QUERIES = defaultdict(lambda: None,
         AND
             l_area_url.edits_pending=0
         AND
-            bwap.gid is NULL
-        AND
             url.edits_pending=0
         AND
             area.id IN (SELECT area FROM valid_areas)
