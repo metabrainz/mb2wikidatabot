@@ -305,7 +305,6 @@ def mainloop():
         elif arg.startswith("-entities"):
             entities = arg[len("-entities:"):].split(",")
 
-    const.WIKIDATA.login()
     const.MUSICBRAINZ_CLAIM.setTarget(const.MUSICBRAINZ_WIKIDATAPAGE)
     setup_db()
 
@@ -317,6 +316,7 @@ def mainloop():
     bot = Bot()
 
     while True:
+        const.WIKIDATA.login()
         for entitytype in entities:
             entity_type_loop(bot, entitytype, limit)
         sleep(settings.sleep_time_in_seconds)
