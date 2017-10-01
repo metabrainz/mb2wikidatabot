@@ -7,6 +7,7 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
                        build-essential \
+                       git \
                        libpq-dev \
                        libffi-dev \
                        libssl-dev \
@@ -35,6 +36,6 @@ WORKDIR /code/listenbrainz
 
 # Consul Template service is already set up with the base image.
 # Just need to copy the configuration.
-COPY ./docker/prod/consul-template.conf /etc/consul-template.conf
+COPY ./docker/consul-template.conf /etc/consul-template.conf
 COPY ./docker/wikidata-bot.service /etc/service/wikidata-bot/run
 RUN chmod 755 /etc/service/wikidata-bot/run
