@@ -39,3 +39,5 @@ login data in MusicBrainz.
 
 Please make sure that your bot does not violate the
 [Code of Conduct](https://musicbrainz.org/doc/Code_of_Conduct/Bots) for bots in MusicBrainz
+
+The configuration of a running bot can be reloaded by sending it a HUP signal.

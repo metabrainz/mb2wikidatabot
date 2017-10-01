@@ -4,6 +4,8 @@ import psycopg2.extensions
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 import pywikibot as wp
+import signal
+import sys
 
 
 from . import const, settings
@@ -14,6 +16,15 @@ else:
     from .musicbrainz_bot import editing
 from time import sleep
 from urlparse import urlparse
+
+
+# Set up a signal handler to reload the settings on SIGHUP
+def signal_handler(signal, frame):
+    reload(settings)
+    setup_db()
+
+
+signal.signal(signal.SIGHUP, signal_handler)
 
 
 WIKI_PREFIX = "/wiki/"
@@ -74,9 +85,14 @@ def create_processed_table_query(entitytype):
 
 def setup_db():
     global readonly_db
+    if readonly_db is not None:
+        readonly_db.close()
     readonly_db = pg.connect(settings.readonly_connection_string)
     readonly_db.autocommit = True
+
     global readwrite_db
+    if readwrite_db is not None:
+        readonly_db.close()
     readwrite_db = pg.connect(settings.readonly_connection_string)
     readwrite_db.autocommit = True
 
