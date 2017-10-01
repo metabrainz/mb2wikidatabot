@@ -5,7 +5,6 @@ psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 import pywikibot as wp
 import signal
-import sys
 
 
 from . import const, settings
