@@ -221,8 +221,6 @@ class Bot(object):
         :param old str:
         :param new str:
         """
-        if new[:5] == "https":
-            new = new.replace("https", "http", 1)
         if wp.config.simulate:
             wp.output("Simulation, not fixing the redirect from %s to %s" %
                       (old, new))
