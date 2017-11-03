@@ -28,7 +28,13 @@ from urlparse import urlparse
 # Set up a signal handler to reload the settings on SIGHUP
 def signal_handler(signal, frame):
     wp.output("HUP received")
+    wp.output("Old RO connection: {}".format(settings.readonly_connection_string))
+    wp.output("Old RW connection: {}".format(settings.readwrite_connection_string))
+    wp.output("Old mb_user {}".format(repr(settings.mb_user)))
     reload(settings)
+    wp.output("New RO connection: {}".format(settings.readonly_connection_string))
+    wp.output("New RW connection: {}".format(settings.readwrite_connection_string))
+    wp.output("New mb_user {}".format(repr(settings.mb_user)))
     setup_db()
 
 
