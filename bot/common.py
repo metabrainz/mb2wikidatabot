@@ -171,7 +171,7 @@ class Bot(object):
     edit_note = "%s is only a redirect to %s"
 
     def __init__(self):
-        if settings.mb_user is None or settings.mb_password is None:
+        if not settings.mb_user or not settings.mb_password:
             wp.output("MusicBrainz credentials are not configured, not enabling editing.")
             self.client = None
         else:
