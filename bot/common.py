@@ -175,7 +175,7 @@ class Bot(object):
             wp.output("MusicBrainz credentials are not configured, not enabling editing.")
             self.client = None
         else:
-            wp.output("MusicBrainz credentials not configured, enabling editing.")
+            wp.output("MusicBrainz credentials are configured, enabling editing.")
             self.client = editing.MusicBrainzClient(settings.mb_user,
                                                     settings.mb_password,
                                                     "https://musicbrainz.org")
