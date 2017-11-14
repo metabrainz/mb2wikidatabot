@@ -11,5 +11,22 @@ Command line options:
           added to their Wikidata pages. Example: `-entities:artist,work,place`
 -limit:x: Only handle x entities of *each* type
 """
-from bot.common import mainloop
-mainloop()
+import psycopg2
+import pywikibot as wp
+
+
+from bot.common import mainloop, SettingsReloadedException
+from time import sleep
+
+while True:
+    try:
+        mainloop()
+    except psycopg2.Error as e:
+        # It might take a few seconds for everything to properly work after
+        # settings have been changed, so give Docker a few seconds to get
+        # everything running.
+        wp.output("Trouble connecting to PostgreSQL: {}".format(e.pgerror))
+        sleep(5)
+    except SettingsReloadedException:
+        # Settings have been reloaded, just start the mainloop again.
+        pass
