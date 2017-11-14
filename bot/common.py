@@ -28,14 +28,8 @@ from urlparse import urlparse
 # Set up a signal handler to reload the settings on SIGHUP
 def signal_handler(signal, frame):
     wp.output("HUP received")
-    wp.output("Old RO connection: {}".format(settings.readonly_connection_string))
-    wp.output("Old RW connection: {}".format(settings.readwrite_connection_string))
-    wp.output("Old mb_user {}".format(repr(settings.mb_user)))
-    reload(settings)
-    wp.output("New RO connection: {}".format(settings.readonly_connection_string))
-    wp.output("New RW connection: {}".format(settings.readwrite_connection_string))
-    wp.output("New mb_user {}".format(repr(settings.mb_user)))
-    setup_db()
+    reload_settings()
+    raise SettingsReloadedException("Settings have been reloaded during HUP")
 
 
 signal.signal(signal.SIGHUP, signal_handler)
@@ -59,6 +53,12 @@ class IsRedirectPage(Exception):
 
     def __str__(self):
         return "%s is a redirect to %s" % (self.old, self.new)
+
+
+class SettingsReloadedException(Exception):
+    """Custom Exception class to signal that the settings have been reloaded
+    during SIGHUP processing."""
+    pass
 
 
 def create_url_mbid_query(entitytype, linkids):
@@ -95,6 +95,16 @@ def create_processed_table_query(entitytype):
     `const.GENERIC_CREATE_PROCESSED_TABLE_QUERY`.
     """
     return const.GENERIC_CREATE_PROCESSED_TABLE_QUERY.format(etype=entitytype)
+
+
+def reload_settings():
+    wp.output("Old RO connection: {}".format(settings.readonly_connection_string))
+    wp.output("Old RW connection: {}".format(settings.readwrite_connection_string))
+    wp.output("Old mb_user {}".format(repr(settings.mb_user)))
+    reload(settings)
+    wp.output("New RO connection: {}".format(settings.readonly_connection_string))
+    wp.output("New RW connection: {}".format(settings.readwrite_connection_string))
+    wp.output("New mb_user {}".format(repr(settings.mb_user)))
 
 
 def setup_db():
