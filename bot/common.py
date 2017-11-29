@@ -148,6 +148,13 @@ def check_redirect_and_disambig(wikilink, page):
         raise IsRedirectPage(wikilink, page.full_url())
     if page.isDisambig():
         raise IsDisambigPage()
+    # page.isDisambig() is False for wikidata items, even if they're instances
+    # of a disambiguation page, so check for that manually.
+    if isinstance(page, wp.ItemPage):
+        if any((key.lower() == const.PROPERTY_ID_INSTANCE_OF.lower() and
+                claim.target.getID() == const.ITEM_ID_DISAMBIGUATION_PAGE)
+                for key, claims in page.claims.items() for claim in claims):
+            raise IsDisambigPage()
 
 
 def get_wikidata_itempage_from_wikilink(wikilink):
@@ -167,13 +174,14 @@ def get_wikidata_itempage_from_wikilink(wikilink):
     elif "wikidata" in parsed_url.netloc:
         pagename = parsed_url.path.replace(WIKI_PREFIX, "")
         wikidatapage = wp.ItemPage(const.WIKIDATA_DATASITE, pagename)
-        check_redirect_and_disambig(wikilink, wikidatapage)
     else:
         raise ValueError("%s is not a link to a wikipedia page" % wikilink)
     try:
         wikidatapage.get()
-    except wp.NoPage:
+    except wp.data.api.APIError:
+        wp.output("%s does not exist" % pagename)
         return None
+    check_redirect_and_disambig(wikilink, wikidatapage)
     return wikidatapage
 
 

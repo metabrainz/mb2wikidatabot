@@ -11,6 +11,11 @@ WIKIDATA_DATASITE = WIKIDATA.data_repository()
 LinkIDsTuple = namedtuple("LinkIDs", "wikipedia wikidata")
 
 
+# The property id and item id for "is a disambiguation page" claims
+PROPERTY_ID_INSTANCE_OF = u"P31"
+ITEM_ID_DISAMBIGUATION_PAGE = "Q4167410"
+
+
 PROPERTY_IDS = {
     "area": "P982",
     "artist": "P434",
