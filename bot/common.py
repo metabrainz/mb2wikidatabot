@@ -117,7 +117,7 @@ def setup_db():
     global readwrite_db
     if readwrite_db is not None:
         readonly_db.close()
-    readwrite_db = pg.connect(settings.readonly_connection_string)
+    readwrite_db = pg.connect(settings.readwrite_connection_string)
     readwrite_db.autocommit = True
 
 
