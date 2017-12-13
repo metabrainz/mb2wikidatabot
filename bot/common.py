@@ -86,7 +86,10 @@ def create_done_func(entitytype):
     `const.GENERIC_DONE_QUERY`.
     """
     query = const.GENERIC_DONE_QUERY.format(etype=entitytype)
-    func = lambda mbid: readwrite_db.cursor().execute(query, {'mbid': mbid})
+
+    def func(mbid):
+        do_readwrite_query(query, {'mbid': mbid})
+
     return func
 
 
@@ -134,10 +137,10 @@ def do_readonly_query(query, limit):
     return cur
 
 
-def do_readwrite_query(query):
+def do_readwrite_query(query, vars=None):
     """Perform `query` against the read-write database."""
     cur = readonly_db.cursor()
-    cur.execute(query)
+    cur.execute(query, vars)
     return cur
 
 
