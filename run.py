@@ -11,12 +11,13 @@ Command line options:
           added to their Wikidata pages. Example: `-entities:artist,work,place`
 -limit:x: Only handle x entities of *each* type
 """
+import sys
+import traceback
+from time import sleep
+
 import psycopg2
 import pywikibot as wp
-
-
 from bot.common import mainloop, SettingsReloadedException
-from time import sleep
 
 while True:
     try:
@@ -25,8 +26,13 @@ while True:
         # It might take a few seconds for everything to properly work after
         # settings have been changed, so give Docker a few seconds to get
         # everything running.
-        wp.output("Trouble connecting to PostgreSQL: {}".format(e.pgerror))
+        print("Trouble connecting to PostgreSQL: {}".format(e.pgerror))
+        traceback.print_exc()
         sleep(5)
     except SettingsReloadedException:
         # Settings have been reloaded, just start the mainloop again.
         pass
+    except Exception as err:
+        print("General exception caught: {}".format(err))
+        traceback.print_exc()
+        sleep(5)
