@@ -15,7 +15,7 @@ while True:
     except ImportError:
         wp.output("No config info available yet. Sleeping 2 seconds.")
         sleep(2)
-        
+
 if settings.mb_user is None or settings.mb_password is None:
     wp.output("No MusicBrainz login data, no redirects will be fixed")
     editing = None
