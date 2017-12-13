@@ -139,7 +139,7 @@ def do_readonly_query(query, limit):
 
 def do_readwrite_query(query, vars=None):
     """Perform `query` against the read-write database."""
-    cur = readonly_db.cursor()
+    cur = readwrite_db.cursor()
     cur.execute(query, vars)
     return cur
 
