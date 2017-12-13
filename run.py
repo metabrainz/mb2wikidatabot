@@ -12,6 +12,7 @@ Command line options:
 -limit:x: Only handle x entities of *each* type
 """
 import sys
+import traceback
 from time import sleep
 
 import psycopg2
