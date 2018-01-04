@@ -313,13 +313,13 @@ def entity_type_loop(bot, entitytype, limit):
     linkids = const.LINK_IDS[entitytype]
 
     wiki_entity_query = create_url_mbid_query(entitytype, linkids)
-    all_results = do_readonly_query(wiki_entity_query, limit)
     already_processed_query = create_already_processed_query(entitytype)
-    already_processed_results = frozenset(
-           do_readwrite_query(already_processed_query))
 
-    results_to_process = [r for r in all_results if r[0] not in
-                          already_processed_results]
+    with do_readonly_query(wiki_entity_query, limit) as all_results, do_readwrite_query(already_processed_query) as already_processed:
+        already_processed_results = frozenset(already_processed)
+
+        results_to_process = [r for r in all_results if r[0] not in
+                              already_processed_results]
 
     if len(results_to_process) == 0:
         wp.output("No more unprocessed entries in MB")
