@@ -323,7 +323,7 @@ def entity_type_loop(bot, entitytype, limit):
         results_to_process = [r for r in all_results if r[0] not in
                               already_processed_results]
 
-    if len(results_to_process) == 0:
+    if not results_to_process:
         wp.output("No more unprocessed entries in MB")
 
     map(bot.process_result, results_to_process)
