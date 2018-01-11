@@ -115,14 +115,14 @@ def setup_db():
     if readonly_db is not None:
         readonly_db.close()
     readonly_db = pg.connect(settings.readonly_connection_string,
-                             application_name="mb2wikidatabot readonly")
+                             application_name="mb2wikidatabot_readonly")
     readonly_db.autocommit = True
 
     global readwrite_db
     if readwrite_db is not None:
         readwrite_db.close()
     readwrite_db = pg.connect(settings.readwrite_connection_string,
-                              application_name="mb2wikidatabot readwrite")
+                              application_name="mb2wikidatabot_readwrite")
     readwrite_db.autocommit = True
 
 
