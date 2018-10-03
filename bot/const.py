@@ -115,36 +115,6 @@ QUERIES = defaultdict(lambda: None,
         """,
         'area':
         """
-        WITH valid_areas AS (
-            SELECT area
-            FROM place
-            UNION
-            SELECT area
-            FROM label
-            UNION
-            SELECT area
-            FROM artist
-            UNION
-            SELECT begin_area
-            FROM artist
-            UNION
-            SELECT end_area
-            FROM artist
-            UNION
-            SELECT area
-            FROM country_area
-            JOIN release_country
-            ON release_country.country = country_area.area
-            UNION
-            SELECT entity0
-            FROM l_area_recording
-            UNION
-            SELECT entity0
-            FROM l_area_release
-            UNION
-            SELECT entity0
-            FROM l_area_work
-            )
         SELECT area.gid, url.gid, url.url
         FROM l_area_url
         JOIN link AS l
@@ -162,7 +132,36 @@ QUERIES = defaultdict(lambda: None,
         AND
             url.edits_pending=0
         AND
-            area.id IN (SELECT area FROM valid_areas)
+        area.id IN (
+            SELECT area
+            FROM place
+            UNION ALL
+            SELECT area
+            FROM label
+            UNION ALL
+            SELECT area
+            FROM artist
+            UNION ALL
+            SELECT begin_area
+            FROM artist
+            UNION ALL
+            SELECT end_area
+            FROM artist
+            UNION ALL
+            SELECT area
+            FROM country_area
+                JOIN release_country
+                ON release_country.country = country_area.area
+            UNION ALL
+            SELECT entity0
+            FROM l_area_recording
+            UNION ALL
+            SELECT entity0
+            FROM l_area_release
+            UNION ALL
+            SELECT entity0
+            FROM l_area_work
+        )
         LIMIT %s;
         """
     }

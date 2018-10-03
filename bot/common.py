@@ -114,13 +114,15 @@ def setup_db():
     global readonly_db
     if readonly_db is not None:
         readonly_db.close()
-    readonly_db = pg.connect(settings.readonly_connection_string)
+    readonly_db = pg.connect(settings.readonly_connection_string,
+                             application_name="mb2wikidatabot_readonly")
     readonly_db.autocommit = True
 
     global readwrite_db
     if readwrite_db is not None:
         readwrite_db.close()
-    readwrite_db = pg.connect(settings.readwrite_connection_string)
+    readwrite_db = pg.connect(settings.readwrite_connection_string,
+                              application_name="mb2wikidatabot_readwrite")
     readwrite_db.autocommit = True
 
 
@@ -313,15 +315,15 @@ def entity_type_loop(bot, entitytype, limit):
     linkids = const.LINK_IDS[entitytype]
 
     wiki_entity_query = create_url_mbid_query(entitytype, linkids)
-    all_results = do_readonly_query(wiki_entity_query, limit)
     already_processed_query = create_already_processed_query(entitytype)
-    already_processed_results = frozenset(
-           do_readwrite_query(already_processed_query))
 
-    results_to_process = [r for r in all_results if r[0] not in
-                          already_processed_results]
+    with do_readonly_query(wiki_entity_query, limit) as all_results, do_readwrite_query(already_processed_query) as already_processed:
+        already_processed_results = frozenset(already_processed)
 
-    if len(results_to_process) == 0:
+        results_to_process = [r for r in all_results if r[0] not in
+                              already_processed_results]
+
+    if not results_to_process:
         wp.output("No more unprocessed entries in MB")
 
     map(bot.process_result, results_to_process)
