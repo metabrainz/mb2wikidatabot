@@ -318,7 +318,7 @@ def entity_type_loop(bot, entitytype, limit):
     already_processed_query = create_already_processed_query(entitytype)
 
     with do_readonly_query(wiki_entity_query, limit) as all_results, do_readwrite_query(already_processed_query) as already_processed:
-        already_processed_results = frozenset(already_processed)
+        already_processed_results = frozenset((row[0] for row in already_processed))
         all_results_list = list(all_results)
 
         if already_processed_results:
