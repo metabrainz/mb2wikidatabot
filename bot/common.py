@@ -88,6 +88,7 @@ def create_done_func(entitytype):
     query = const.GENERIC_DONE_QUERY.format(etype=entitytype)
 
     def func(mbid):
+        wp.output("Executing '{query}' with mbid='{mbid}'".format(query=query, mbid=mbid))
         do_readwrite_query(query, {'mbid': mbid})
 
     return func
@@ -319,8 +320,16 @@ def entity_type_loop(bot, entitytype, limit):
 
     with do_readonly_query(wiki_entity_query, limit) as all_results, do_readwrite_query(already_processed_query) as already_processed:
         already_processed_results = frozenset(already_processed)
+        all_results_list = list(all_results)
 
-        results_to_process = [r for r in all_results if r[0] not in
+        if already_processed_results:
+            elem = list(already_processed_results)[0]
+            wp.output("Type of already_processed_results: {}".format(type(elem)))
+        if all_results:
+            elem = all_results_list[0][0]
+            wp.output("Type of all_results: {}".format(type(elem)))
+
+        results_to_process = [r for r in all_results_list if r[0] not in
                               already_processed_results]
 
     if not results_to_process:
