@@ -88,7 +88,6 @@ def create_done_func(entitytype):
     query = const.GENERIC_DONE_QUERY.format(etype=entitytype)
 
     def func(mbid):
-        wp.output("Executing '{query}' with mbid='{mbid}'".format(query=query, mbid=mbid))
         do_readwrite_query(query, {'mbid': mbid})
 
     return func
