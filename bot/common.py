@@ -183,7 +183,7 @@ def get_wikidata_itempage_from_wikilink(wikilink):
         raise ValueError("%s is not a link to a wikipedia page" % wikilink)
     try:
         wikidatapage.get(get_redirect=True)
-    except wp.data.api.APIError:
+    except wp.NoPage:
         wp.output("%s does not exist" % pagename)
         return None
     check_redirect_and_disambig(wikilink, wikidatapage)
