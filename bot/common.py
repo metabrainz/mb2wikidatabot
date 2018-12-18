@@ -229,7 +229,8 @@ class Bot(object):
         claim = wp.Claim(const.WIKIDATA_DATASITE, self.property_id)
         claim.setTarget(mbid)
         wp.debug(u"Adding property {pid}, value {mbid} to {title}".format
-                 (pid=self.property_id, mbid=mbid, title=item.title()))
+                 (pid=self.property_id, mbid=mbid, title=item.title()),
+                 layer="")
         if wp.config.simulate:
             wp.output("Simulation, no property has been added")
             return
@@ -242,7 +243,7 @@ class Bot(object):
             wp.warning(e)
             return
         else:
-            wp.debug("Adding the source Claim")
+            wp.debug("Adding the source Claim", layer="")
             claim.addSource(const.MUSICBRAINZ_CLAIM, bot=True)
             self.donefunc(mbid)
 
@@ -258,7 +259,7 @@ class Bot(object):
             return
         if self.client is None:
             return
-        wp.debug("Fixing the redirect from %s to %s" % (old, new))
+        wp.debug("Fixing the redirect from %s to %s" % (old, new), layer="")
         self.client.edit_url(gid, old, new, self.edit_note % (old, new))
 
     def process_result(self, result):
@@ -267,7 +268,7 @@ class Bot(object):
             entitytype=self._current_entity_type.replace("_", "-"),
             wp=wikipage,
             gid=entity_gid
-        ))
+        ), layer="")
         try:
             itempage = get_wikidata_itempage_from_wikilink(wikipage)
         except wp.NoSuchSite:
@@ -277,7 +278,7 @@ class Bot(object):
             wp.warning("{page} is a disambiguation page".format(page=wikipage))
             return
         except IsRedirectPage as e:
-            wp.debug("{page} is a redirect".format(page=wikipage))
+            wp.debug("{page} is a redirect".format(page=wikipage), layer="")
             self.fix_redirect(url_gid, e.old, e.new)
             return
         except ValueError as e:
@@ -295,12 +296,12 @@ class Bot(object):
             wp.debug(u"{page} already has property {pid} with value {mbid}".
                      format(page=wikipage,
                             mbid=entity_gid,
-                            pid=self.property_id))
+                            pid=self.property_id), layer="")
             self.donefunc(entity_gid)
             return
 
         wp.debug("{mbid} is not linked in Wikidata".format(
-                  mbid=entity_gid))
+                  mbid=entity_gid), layer="")
         self.add_mbid_claim_to_item(itempage, entity_gid)
 
 
