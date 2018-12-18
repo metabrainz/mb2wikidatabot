@@ -174,7 +174,7 @@ def get_wikidata_itempage_from_wikilink(wikilink):
         try:
             wikidatapage = wp.ItemPage.fromPage(enwikipage)
         except wp.NoPage:
-            wp.output("%s does not exist" % enwikipage)
+            wp.error("%s does not exist" % enwikipage)
             return None
     elif "wikidata" in parsed_url.netloc:
         pagename = parsed_url.path.replace(WIKI_PREFIX, "")
@@ -184,7 +184,7 @@ def get_wikidata_itempage_from_wikilink(wikilink):
     try:
         wikidatapage.get(get_redirect=True)
     except wp.NoPage:
-        wp.output("%s does not exist" % pagename)
+        wp.error("%s does not exist" % pagename)
         return None
     check_redirect_and_disambig(wikilink, wikidatapage)
     return wikidatapage
@@ -228,8 +228,8 @@ class Bot(object):
         """
         claim = wp.Claim(const.WIKIDATA_DATASITE, self.property_id)
         claim.setTarget(mbid)
-        wp.output(u"Adding property {pid}, value {mbid} to {title}".format
-                  (pid=self.property_id, mbid=mbid, title=item.title()))
+        wp.debug(u"Adding property {pid}, value {mbid} to {title}".format
+                 (pid=self.property_id, mbid=mbid, title=item.title()))
         if wp.config.simulate:
             wp.output("Simulation, no property has been added")
             return
@@ -242,7 +242,7 @@ class Bot(object):
             wp.warning(e)
             return
         else:
-            wp.output("Adding the source Claim")
+            wp.debug("Adding the source Claim")
             claim.addSource(const.MUSICBRAINZ_CLAIM, bot=True)
             self.donefunc(mbid)
 
@@ -258,12 +258,12 @@ class Bot(object):
             return
         if self.client is None:
             return
-        wp.output("Fixing the redirect from %s to %s" % (old, new))
+        wp.debug("Fixing the redirect from %s to %s" % (old, new))
         self.client.edit_url(gid, old, new, self.edit_note % (old, new))
 
     def process_result(self, result):
         entity_gid, url_gid, wikipage = result
-        wp.output("» {wp} https://musicbrainz.org/{entitytype}/{gid}".format(
+        wp.debug("» {wp} https://musicbrainz.org/{entitytype}/{gid}".format(
             entitytype=self._current_entity_type.replace("_", "-"),
             wp=wikipage,
             gid=entity_gid
@@ -271,13 +271,13 @@ class Bot(object):
         try:
             itempage = get_wikidata_itempage_from_wikilink(wikipage)
         except wp.NoSuchSite:
-            wp.output("{page} no supported family".format(page=wikipage))
+            wp.warning("{page} no supported family".format(page=wikipage))
             return
         except IsDisambigPage:
-            wp.output("{page} is a disambiguation page".format(page=wikipage))
+            wp.warning("{page} is a disambiguation page".format(page=wikipage))
             return
         except IsRedirectPage as e:
-            wp.output("{page} is a redirect".format(page=wikipage))
+            wp.debug("{page} is a redirect".format(page=wikipage))
             self.fix_redirect(url_gid, e.old, e.new)
             return
         except ValueError as e:
@@ -292,14 +292,14 @@ class Bot(object):
         if any((key.lower() == self.property_id.lower() and
                claim.target == entity_gid)
                for key, claims in itempage.claims.items() for claim in claims):
-            wp.output(u"{page} already has property {pid} with value {mbid}".
-                      format(page=wikipage,
-                             mbid=entity_gid,
-                             pid=self.property_id))
+            wp.debug(u"{page} already has property {pid} with value {mbid}".
+                     format(page=wikipage,
+                            mbid=entity_gid,
+                            pid=self.property_id))
             self.donefunc(entity_gid)
             return
 
-        wp.output("{mbid} is not linked in Wikidata".format(
+        wp.debug("{mbid} is not linked in Wikidata".format(
                   mbid=entity_gid))
         self.add_mbid_claim_to_item(itempage, entity_gid)
 
@@ -325,6 +325,9 @@ def entity_type_loop(bot, entitytype, limit):
 
     if not results_to_process:
         wp.output("No more unprocessed entries in MB")
+    else:
+        wp.output("Processing {amount} {etype}s".format(amount=len(results_to_process),
+                                                        etype=entitytype))
 
     map(bot.process_result, results_to_process)
 
