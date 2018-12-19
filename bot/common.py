@@ -1,5 +1,6 @@
 # coding: utf-8
 from time import sleep
+import datetime
 import psycopg2 as pg
 import psycopg2.extensions
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
@@ -244,7 +245,7 @@ class Bot(object):
             return
         else:
             wp.debug("Adding the source Claim", layer="")
-            claim.addSource(const.MUSICBRAINZ_CLAIM, bot=True)
+            claim.addSources([const.MUSICBRAINZ_CLAIM, const.RETRIEVED_CLAIM], bot=True)
             self.donefunc(mbid)
 
     def fix_redirect(self, gid, old, new):
@@ -348,6 +349,9 @@ def mainloop():
             entities = arg[len("-entities:"):].split(",")
 
     const.MUSICBRAINZ_CLAIM.setTarget(const.MUSICBRAINZ_WIKIDATAPAGE)
+    today = datetime.datetime.today()
+    date = wp.WbTime(year=today.year, month=today.month, day=today.day)
+    const.RETRIEVED_CLAIM.setTarget(date)
     setup_db()
 
     for entitytype in entities:
