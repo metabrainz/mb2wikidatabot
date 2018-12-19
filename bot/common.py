@@ -274,6 +274,10 @@ class Bot(object):
         except wp.NoSuchSite:
             wp.warning("{page} no supported family".format(page=wikipage))
             return
+        except (wp.BadTitle, wp.InvalidTitle) as e:
+            wp.error("Bad or invalid title received while processing {page}".format(page=wikipage))
+            wp.exception(e, tb=True)
+            return
         except IsDisambigPage:
             wp.warning("{page} is a disambiguation page".format(page=wikipage))
             return
