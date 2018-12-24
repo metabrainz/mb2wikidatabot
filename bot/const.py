@@ -22,7 +22,9 @@ PROPERTY_IDS = {
     "instrument": "P1330",
     "label": "P966",
     "place": "P1004",
+    "recording": "P4404",
     "release_group": "P436",
+    "release": "P5813",
     "series": "P1407",
     "work": "P435",
 }
