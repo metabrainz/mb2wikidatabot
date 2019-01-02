@@ -58,6 +58,11 @@ class HasFragment(SkipPage):
         return "{url} has a fragment".format(url=self.url)
 
 
+class IsRedirectWithItemPage(SkipPage):
+    def __str__(self):
+        return "{url} is a redirect page, but is linked to a Wikidata item".format(url=self.url)
+
+
 class IsRedirectPage(Exception):
     def __init__(self, old, new):
         self.old = old
@@ -173,6 +178,22 @@ def check_url_needs_to_be_skipped(wikilink, page):
     full_url = page.full_url()
     check_has_fragment(full_url)
     if page.isRedirectPage():
+        try:
+            wp.ItemPage.fromPage(page)
+        except wp.NoPage:
+            # Page is a redirect without its own wikidata item -
+            # everything's OK, we can safely fix the redirect.
+            # Examples of this are
+            # https://en.wikipedia.org/w/index.php?title=Star_Wars_Episode_I:_The_Phantom_Menace_(soundtrack)&redirect=no
+            pass
+        else:
+            # Page is a redirect, but has its own wikidata item - it's better
+            # to not touch this.
+            # Examples of this are
+            # https://en.wikipedia.org/wiki/Hybrid_Theory_%28EP%29, which is a
+            # redirect on en.wp, but has its own article on lots of other
+            # wikipedias and therefore its own wikidata item.
+            raise IsRedirectWithItemPage(full_url)
         page = page.getRedirectTarget()
         full_url = page.full_url()
         check_has_fragment(full_url)
