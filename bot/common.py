@@ -207,9 +207,9 @@ def check_url_needs_to_be_skipped(wikilink, page):
         page = page.getRedirectTarget()
         full_url = page.full_url()
         check_has_fragment(full_url)
-        raise IsRedirectPage(wikilink, page.full_url())
+        raise IsRedirectPage(wikilink, full_url)
     if page.isDisambig():
-        raise IsDisambigPage(page.full_url())
+        raise IsDisambigPage(full_url)
     # page.isDisambig() is False for wikidata items, even if they're instances
     # of a disambiguation page, so check for that and other forbidden instance
     # of claims manually.
