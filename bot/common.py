@@ -53,6 +53,9 @@ class IsDisambigPage(SkipPage):
         return "{url} is a disambiguation page".format(url=self.url)
 
 
+class HasFragment(SkipPage):
+    def __str__(self):
+        return "{url} has a fragment".format(url=self.url)
 
 
 class IsRedirectPage(Exception):
@@ -155,10 +158,24 @@ def do_readwrite_query(query, vars=None):
     return cur
 
 
+def check_has_fragment(url):
+    """Check if `url` contains a fragment
+
+    This is most often the case for discography pages where a single album is
+    only mentioned in a few paragraphs."""
+    parsed_url = urlparse(url)
+    if parsed_url.fragment:
+        raise HasFragment(url)
+
+
 def check_url_needs_to_be_skipped(wikilink, page):
     """Check if `page` is a redirect or disambiguation page"""
+    full_url = page.full_url()
+    check_has_fragment(full_url)
     if page.isRedirectPage():
         page = page.getRedirectTarget()
+        full_url = page.full_url()
+        check_has_fragment(full_url)
         raise IsRedirectPage(wikilink, page.full_url())
     if page.isDisambig():
         raise IsDisambigPage(page.full_url())
