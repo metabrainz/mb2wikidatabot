@@ -43,8 +43,16 @@ readonly_db = None
 readwrite_db = None
 
 
-class IsDisambigPage(Exception):
-    pass
+class SkipPage(Exception):
+    def __init__(self, url):
+        self.url = url
+
+
+class IsDisambigPage(SkipPage):
+    def __str__(self):
+        return "{url} is a disambiguation page".format(url=self.url)
+
+
 
 
 class IsRedirectPage(Exception):
@@ -147,20 +155,20 @@ def do_readwrite_query(query, vars=None):
     return cur
 
 
-def check_redirect_and_disambig(wikilink, page):
+def check_url_needs_to_be_skipped(wikilink, page):
     """Check if `page` is a redirect or disambiguation page"""
     if page.isRedirectPage():
         page = page.getRedirectTarget()
         raise IsRedirectPage(wikilink, page.full_url())
     if page.isDisambig():
-        raise IsDisambigPage()
+        raise IsDisambigPage(page.full_url())
     # page.isDisambig() is False for wikidata items, even if they're instances
     # of a disambiguation page, so check for that manually.
     if isinstance(page, wp.ItemPage):
         if any((key.lower() == const.PROPERTY_ID_INSTANCE_OF.lower() and
                 claim.target.getID() == const.ITEM_ID_DISAMBIGUATION_PAGE)
                 for key, claims in page.claims.items() for claim in claims):
-            raise IsDisambigPage()
+            raise IsDisambigPage(page.full_url())
 
 
 def get_wikidata_itempage_from_wikilink(wikilink):
@@ -171,7 +179,7 @@ def get_wikidata_itempage_from_wikilink(wikilink):
         wikilanguage = parsed_url.netloc.split(".")[0]
         wikisite = wp.Site(wikilanguage, "wikipedia")
         enwikipage = wp.Page(wikisite, pagename)
-        check_redirect_and_disambig(wikilink, enwikipage)
+        check_url_needs_to_be_skipped(wikilink, enwikipage)
         try:
             wikidatapage = wp.ItemPage.fromPage(enwikipage)
         except wp.NoPage:
@@ -187,7 +195,7 @@ def get_wikidata_itempage_from_wikilink(wikilink):
     except wp.NoPage:
         wp.error("%s does not exist" % pagename)
         return None
-    check_redirect_and_disambig(wikilink, wikidatapage)
+    check_url_needs_to_be_skipped(wikilink, wikidatapage)
     return wikidatapage
 
 
@@ -279,8 +287,9 @@ class Bot(object):
             wp.error("Bad or invalid title received while processing {page}".format(page=wikipage))
             wp.exception(e, tb=True)
             return
-        except IsDisambigPage:
-            wp.warning("{page} is a disambiguation page".format(page=wikipage))
+        except SkipPage as e:
+            wp.warning("{page} is being skipped because: {reason}".format(page=wikipage,
+                                                                          reason=e))
             return
         except IsRedirectPage as e:
             wp.debug("{page} is a redirect".format(page=wikipage), layer="")
