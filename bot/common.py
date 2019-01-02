@@ -58,6 +58,16 @@ class HasFragment(SkipPage):
         return "{url} has a fragment".format(url=self.url)
 
 
+class InstanceOfForbidden(SkipPage):
+    def __init__(self, url, item_id):
+        super().__init__(url)
+        self.item_id = item_id
+
+    def __str__(self):
+        return "{url} is an instance of {id}".format(url=self.url,
+                                                     id=self.item_id)
+
+
 class IsRedirectWithItemPage(SkipPage):
     def __str__(self):
         return "{url} is a redirect page, but is linked to a Wikidata item".format(url=self.url)
@@ -201,12 +211,15 @@ def check_url_needs_to_be_skipped(wikilink, page):
     if page.isDisambig():
         raise IsDisambigPage(page.full_url())
     # page.isDisambig() is False for wikidata items, even if they're instances
-    # of a disambiguation page, so check for that manually.
+    # of a disambiguation page, so check for that and other forbidden instance
+    # of claims manually.
     if isinstance(page, wp.ItemPage):
-        if any((key.lower() == const.PROPERTY_ID_INSTANCE_OF.lower() and
-                claim.target.getID() == const.ITEM_ID_DISAMBIGUATION_PAGE)
-                for key, claims in page.claims.items() for claim in claims):
-            raise IsDisambigPage(page.full_url())
+        for key, claims in page.claims.items():
+            if key.lower() == const.PROPERTY_ID_INSTANCE_OF.lower():
+                for claim in claims:
+                    item_id = claim.target.getID()
+                    if item_id in const.SKIP_INSTANCE_OF_ITEMS:
+                        raise InstanceOfForbidden(full_url, item_id)
 
 
 def get_wikidata_itempage_from_wikilink(wikilink):
