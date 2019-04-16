@@ -13,7 +13,9 @@ LinkIDsTuple = namedtuple("LinkIDs", "wikipedia wikidata")
 
 # The property id and item id for "is a disambiguation page" claims
 PROPERTY_ID_INSTANCE_OF = u"P31"
-ITEM_ID_DISAMBIGUATION_PAGE = "Q4167410"
+SKIP_INSTANCE_OF_ITEMS = ("Q4167410",  # disambiguation page
+                          "Q273057",  # discography
+                          )
 
 
 PROPERTY_IDS = {

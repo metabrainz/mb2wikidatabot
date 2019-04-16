@@ -43,8 +43,34 @@ readonly_db = None
 readwrite_db = None
 
 
-class IsDisambigPage(Exception):
-    pass
+class SkipPage(Exception):
+    def __init__(self, url):
+        self.url = url
+
+
+class IsDisambigPage(SkipPage):
+    def __str__(self):
+        return "{url} is a disambiguation page".format(url=self.url)
+
+
+class HasFragment(SkipPage):
+    def __str__(self):
+        return "{url} has a fragment".format(url=self.url)
+
+
+class InstanceOfForbidden(SkipPage):
+    def __init__(self, url, item_id):
+        super().__init__(url)
+        self.item_id = item_id
+
+    def __str__(self):
+        return "{url} is an instance of {id}".format(url=self.url,
+                                                     id=self.item_id)
+
+
+class IsRedirectWithItemPage(SkipPage):
+    def __str__(self):
+        return "{url} is a redirect page, but is linked to a Wikidata item".format(url=self.url)
 
 
 class IsRedirectPage(Exception):
@@ -147,20 +173,53 @@ def do_readwrite_query(query, vars=None):
     return cur
 
 
-def check_redirect_and_disambig(wikilink, page):
+def check_has_fragment(url):
+    """Check if `url` contains a fragment
+
+    This is most often the case for discography pages where a single album is
+    only mentioned in a few paragraphs."""
+    parsed_url = urlparse(url)
+    if parsed_url.fragment:
+        raise HasFragment(url)
+
+
+def check_url_needs_to_be_skipped(wikilink, page):
     """Check if `page` is a redirect or disambiguation page"""
+    full_url = page.full_url()
+    check_has_fragment(full_url)
     if page.isRedirectPage():
+        try:
+            wp.ItemPage.fromPage(page)
+        except wp.NoPage:
+            # Page is a redirect without its own wikidata item -
+            # everything's OK, we can safely fix the redirect.
+            # Examples of this are
+            # https://en.wikipedia.org/w/index.php?title=Star_Wars_Episode_I:_The_Phantom_Menace_(soundtrack)&redirect=no
+            pass
+        else:
+            # Page is a redirect, but has its own wikidata item - it's better
+            # to not touch this.
+            # Examples of this are
+            # https://en.wikipedia.org/wiki/Hybrid_Theory_%28EP%29, which is a
+            # redirect on en.wp, but has its own article on lots of other
+            # wikipedias and therefore its own wikidata item.
+            raise IsRedirectWithItemPage(full_url)
         page = page.getRedirectTarget()
-        raise IsRedirectPage(wikilink, page.full_url())
+        full_url = page.full_url()
+        check_has_fragment(full_url)
+        raise IsRedirectPage(wikilink, full_url)
     if page.isDisambig():
-        raise IsDisambigPage()
+        raise IsDisambigPage(full_url)
     # page.isDisambig() is False for wikidata items, even if they're instances
-    # of a disambiguation page, so check for that manually.
+    # of a disambiguation page, so check for that and other forbidden instance
+    # of claims manually.
     if isinstance(page, wp.ItemPage):
-        if any((key.lower() == const.PROPERTY_ID_INSTANCE_OF.lower() and
-                claim.target.getID() == const.ITEM_ID_DISAMBIGUATION_PAGE)
-                for key, claims in page.claims.items() for claim in claims):
-            raise IsDisambigPage()
+        for key, claims in page.claims.items():
+            if key.lower() == const.PROPERTY_ID_INSTANCE_OF.lower():
+                for claim in claims:
+                    item_id = claim.target.getID()
+                    if item_id in const.SKIP_INSTANCE_OF_ITEMS:
+                        raise InstanceOfForbidden(full_url, item_id)
 
 
 def get_wikidata_itempage_from_wikilink(wikilink):
@@ -171,7 +230,7 @@ def get_wikidata_itempage_from_wikilink(wikilink):
         wikilanguage = parsed_url.netloc.split(".")[0]
         wikisite = wp.Site(wikilanguage, "wikipedia")
         enwikipage = wp.Page(wikisite, pagename)
-        check_redirect_and_disambig(wikilink, enwikipage)
+        check_url_needs_to_be_skipped(wikilink, enwikipage)
         try:
             wikidatapage = wp.ItemPage.fromPage(enwikipage)
         except wp.NoPage:
@@ -187,7 +246,7 @@ def get_wikidata_itempage_from_wikilink(wikilink):
     except wp.NoPage:
         wp.error("%s does not exist" % pagename)
         return None
-    check_redirect_and_disambig(wikilink, wikidatapage)
+    check_url_needs_to_be_skipped(wikilink, wikidatapage)
     return wikidatapage
 
 
@@ -279,8 +338,9 @@ class Bot(object):
             wp.error("Bad or invalid title received while processing {page}".format(page=wikipage))
             wp.exception(e, tb=True)
             return
-        except IsDisambigPage:
-            wp.warning("{page} is a disambiguation page".format(page=wikipage))
+        except SkipPage as e:
+            wp.warning("{page} is being skipped because: {reason}".format(page=wikipage,
+                                                                          reason=e))
             return
         except IsRedirectPage as e:
             wp.debug("{page} is a redirect".format(page=wikipage), layer="")
