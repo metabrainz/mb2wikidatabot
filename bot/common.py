@@ -254,7 +254,7 @@ class Bot(object):
     edit_note = "%s is only a redirect to %s"
 
     def __init__(self):
-        if not settings.mb_user or not settings.mb_password:
+        if not settings.mb_user or not settings.mb_password or not settings.mb_editor_id:
             wp.output("MusicBrainz credentials are not configured, not enabling editing.")
             self.client = None
         else:
@@ -262,6 +262,8 @@ class Bot(object):
             self.client = editing.MusicBrainzClient(settings.mb_user,
                                                     settings.mb_password,
                                                     "https://musicbrainz.org")
+            self.update_rate_limits()
+
         self._current_entity_type = None
         self.linkids = None
         self.property_id = None
@@ -276,6 +278,38 @@ class Bot(object):
         self.linkids = const.LINK_IDS[new_type]
         self.property_id = const.PROPERTY_IDS[new_type]
         self._current_entity_type = new_type
+
+    @property
+    def can_edit(self):
+        if self.client is None:
+            return False
+        if not self.number_of_allowed_edits:
+            return False
+        if wp.config.simulate:
+            return False
+        return True
+
+    def update_rate_limits(self):
+        """
+        Retrieve the current rate limit status from MusicBrainz.
+        """
+        if self.client is None:
+            self.number_of_allowed_edits = 0
+            return
+        self.number_of_allowed_edits = self.client.edits_left()
+
+        # This includes those for today
+        if not self.number_of_allowed_edits:
+            wp.output("Reached the limit of open edits.")
+
+    def _performed_edit(self):
+        """
+        Callback for decrementing the number of edits that can still be opened.
+        Prints an informational method when the limit is reached.
+        """
+        self.number_of_allowed_edits -= 1
+        if not self.number_of_allowed_edits:
+            wp.output("Reached the limit of open edits, disabling editing")
 
     def add_mbid_claim_to_item(self, item, mbid):
         """
@@ -313,14 +347,9 @@ class Bot(object):
         :param old str:
         :param new str:
         """
-        if wp.config.simulate:
-            wp.output("Simulation, not fixing the redirect from %s to %s" %
-                      (old, new))
-            return
-        if self.client is None:
-            return
         wp.debug("Fixing the redirect from %s to %s" % (old, new), layer="")
         self.client.edit_url(gid, old, new, self.edit_note % (old, new))
+        self._performed_edit()
 
     def process_result(self, result):
         entity_gid, url_gid, wikipage = result
@@ -344,7 +373,8 @@ class Bot(object):
             return
         except IsRedirectPage as e:
             wp.debug("{page} is a redirect".format(page=wikipage), layer="")
-            self.fix_redirect(url_gid, e.old, e.new)
+            if self.can_edit:
+                self.fix_redirect(url_gid, e.old, e.new)
             return
         except ValueError as e:
             wp.output(e)
@@ -424,4 +454,5 @@ def mainloop():
         const.WIKIDATA.login()
         for entitytype in entities:
             entity_type_loop(bot, entitytype, limit)
+        bot.update_rate_limits()
         sleep(settings.sleep_time_in_seconds)

@@ -11,7 +11,10 @@ readwrite_connection_string="dbname=wikidata_bot_db user=musicbrainz host={{.Add
 
 # mb_user and mb_password are only required if the bot should fix links to
 # redirect pages in MusicBrainz. If that is not desired, leave them as `None`.
+# mb_editor_id is required for limiting the number of open edits. If it's not
+# supplied, editing is not possible
 mb_user="{{template "KEY" "mb_user"}}"
 mb_password="{{template "KEY" "mb_password"}}"
+mb_editor_id="{{ template "KEY" "mb_editor_id"}}"
 
 sleep_time_in_seconds = 3600
