@@ -22,8 +22,14 @@ if settings.mb_user is None or settings.mb_password is None:
     editing = None
 else:
     from .musicbrainz_bot import editing
+from sys import version_info
 from time import sleep
 from urlparse import urlparse
+
+if version_info[0] == 2:
+    IS_PY3 = False
+elif version_info[0] == 3:
+    IS_PY3 = True
 
 
 # Set up a signal handler to reload the settings on SIGHUP
@@ -60,7 +66,10 @@ class HasFragment(SkipPage):
 
 class InstanceOfForbidden(SkipPage):
     def __init__(self, url, item_id):
-        super().__init__(url)
+        if IS_PY3:
+            super().__init__(url)
+        else:
+            super(InstanceOfForbidden, self).__init__(url)
         self.item_id = item_id
 
     def __str__(self):
