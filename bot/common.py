@@ -434,7 +434,8 @@ def entity_type_loop(bot, entitytype, limit):
         wp.output("Processing {amount} {etype}s".format(amount=len(results_to_process),
                                                         etype=entitytype))
 
-    map(bot.process_result, results_to_process)
+    for r in results_to_process:
+        bot.process_result(r)
 
 
 def mainloop():
