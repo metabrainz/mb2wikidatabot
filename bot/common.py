@@ -24,12 +24,13 @@ else:
     from .musicbrainz_bot import editing
 from sys import version_info
 from time import sleep
-from urlparse import urlparse
 
 if version_info[0] == 2:
     IS_PY3 = False
+    from urlparse import urlparse
 elif version_info[0] == 3:
     IS_PY3 = True
+    from urllib.parse import urlparse
 
 
 # Set up a signal handler to reload the settings on SIGHUP
