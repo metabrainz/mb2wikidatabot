@@ -13,10 +13,6 @@ RUN apt-get update \
                        libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone --recursive https://gerrit.wikimedia.org/r/pywikibot/core.git pywikipediabot && \
-    cd pywikipediabot && \
-    python2 setup.py install
-
 # PostgreSQL client
 RUN apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
 ENV PG_MAJOR 9.5

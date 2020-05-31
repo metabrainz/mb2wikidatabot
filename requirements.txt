@@ -1,2 +1,3 @@
 psycopg2
 mechanize
+pywikibot==3.0.20200508
