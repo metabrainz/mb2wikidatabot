@@ -1,8 +1,8 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 """
 This is a bot to automatically add MBIDs to Wikidata pages.
 
-Usage: python2 run.py [options]
+Usage: python run.py [options]
 
 Command line options:
 
