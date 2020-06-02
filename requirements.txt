@@ -1,5 +1,3 @@
 psycopg2
-# The following are needed for the musicbrainz_bot submodule
-selenium
-pyvirtualdisplay
 mechanize
+pywikibot==3.0.20200508

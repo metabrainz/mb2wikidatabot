@@ -1,4 +1,4 @@
-FROM metabrainz/python:2.7
+FROM metabrainz/python:3.8
 
 ENV DOCKERIZE_VERSION v0.2.0
 RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
@@ -12,10 +12,6 @@ RUN apt-get update \
                        libffi-dev \
                        libssl-dev \
     && rm -rf /var/lib/apt/lists/*
-
-RUN git clone --recursive https://gerrit.wikimedia.org/r/pywikibot/core.git pywikipediabot && \
-    cd pywikipediabot && \
-    python2 setup.py install
 
 # PostgreSQL client
 RUN apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
