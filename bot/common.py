@@ -271,7 +271,8 @@ class Bot(object):
             wp.output("MusicBrainz credentials are configured, enabling editing.")
             self.client = editing.MusicBrainzClient(settings.mb_user,
                                                     settings.mb_password,
-                                                    "https://musicbrainz.org")
+                                                    "https://musicbrainz.org",
+                                                    settings.mb_editor_id)
             self.update_rate_limits()
 
         self._current_entity_type = None
