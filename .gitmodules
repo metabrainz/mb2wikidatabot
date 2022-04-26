@@ -1,3 +1,3 @@
 [submodule "bot/musicbrainz_bot"]
 	path = bot/musicbrainz_bot
-	url = https://github.com/mineo/musicbrainz-bot.git
+	url = https://github.com/metabrainz/musicbrainz-bot.git
