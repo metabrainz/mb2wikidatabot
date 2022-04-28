@@ -200,7 +200,7 @@ def check_url_needs_to_be_skipped(wikilink, page):
     if page.isRedirectPage():
         try:
             wp.ItemPage.fromPage(page)
-        except wp.NoPage:
+        except wp.exceptions.NoPageError:
             # Page is a redirect without its own wikidata item -
             # everything's OK, we can safely fix the redirect.
             # Examples of this are
@@ -243,7 +243,7 @@ def get_wikidata_itempage_from_wikilink(wikilink):
         check_url_needs_to_be_skipped(wikilink, enwikipage)
         try:
             wikidatapage = wp.ItemPage.fromPage(enwikipage)
-        except wp.NoPage:
+        except wp.exceptions.NoPageErrorError:
             wp.error("%s does not exist" % enwikipage)
             return None
     elif "wikidata" in parsed_url.netloc:
@@ -253,7 +253,7 @@ def get_wikidata_itempage_from_wikilink(wikilink):
         raise ValueError("%s is not a link to a wikipedia page" % wikilink)
     try:
         wikidatapage.get(get_redirect=True)
-    except wp.NoPage:
+    except wp.exceptions.NoPageErrorError:
         wp.error("%s does not exist" % pagename)
         return None
     check_url_needs_to_be_skipped(wikilink, wikidatapage)
@@ -374,10 +374,10 @@ class Bot(object):
         ), layer="")
         try:
             itempage = get_wikidata_itempage_from_wikilink(wikipage)
-        except wp.NoSuchSite:
+        except wp.exceptions.SiteDefinitionError:
             wp.warning("{page} no supported family".format(page=wikipage))
             return
-        except (wp.BadTitle, wp.InvalidTitle) as e:
+        except (wp.exceptions.InvalidTitleError) as e:
             wp.error("Bad or invalid title received while processing {page}".format(page=wikipage))
             wp.exception(e, tb=True)
             return
