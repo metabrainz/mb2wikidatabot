@@ -349,7 +349,10 @@ class Bot(object):
             return
         else:
             wp.debug("Adding the source Claim", layer="")
-            claim.addSources([const.MUSICBRAINZ_CLAIM, const.RETRIEVED_CLAIM], bot=True)
+            claim.addSources(
+                [const.MUSICBRAINZ_CLAIM.copy(), const.RETRIEVED_CLAIM.copy()],
+                bot=True,
+            )
             self.donefunc(mbid)
 
     def fix_redirect(self, gid, old, new):
@@ -408,6 +411,7 @@ class Bot(object):
 
         wp.debug("{mbid} is not linked in Wikidata".format(
                   mbid=entity_gid), layer="")
+        wp.output("TestyTest")
         self.add_mbid_claim_to_item(itempage, entity_gid)
 
 
