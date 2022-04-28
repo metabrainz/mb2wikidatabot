@@ -411,7 +411,6 @@ class Bot(object):
 
         wp.debug("{mbid} is not linked in Wikidata".format(
                   mbid=entity_gid), layer="")
-        wp.output("TestyTest")
         self.add_mbid_claim_to_item(itempage, entity_gid)
 
 
