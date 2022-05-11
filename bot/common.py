@@ -341,10 +341,10 @@ class Bot(object):
             return
         try:
             item.addClaim(claim, True)
-        except wp.UserBlocked as e:
-            wp.error("I have been blocked")
-            exit(1)
-        except wp.Error as e:
+        except wp.exceptions.OtherPageSaveError:
+            wp.warning("Page is protected, cannot save")
+            return
+        except wp.exceptions.Error as e:
             wp.warning(e)
             return
         else:
