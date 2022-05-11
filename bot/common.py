@@ -243,7 +243,7 @@ def get_wikidata_itempage_from_wikilink(wikilink):
         check_url_needs_to_be_skipped(wikilink, enwikipage)
         try:
             wikidatapage = wp.ItemPage.fromPage(enwikipage)
-        except wp.exceptions.NoPageErrorError:
+        except wp.exceptions.NoPageError:
             wp.error("%s does not exist" % enwikipage)
             return None
     elif "wikidata" in parsed_url.netloc:
@@ -253,7 +253,7 @@ def get_wikidata_itempage_from_wikilink(wikilink):
         raise ValueError("%s is not a link to a wikipedia page" % wikilink)
     try:
         wikidatapage.get(get_redirect=True)
-    except wp.exceptions.NoPageErrorError:
+    except wp.exceptions.NoPageError:
         wp.error("%s does not exist" % pagename)
         return None
     check_url_needs_to_be_skipped(wikilink, wikidatapage)
