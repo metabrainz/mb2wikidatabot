@@ -99,7 +99,7 @@ QUERIES = defaultdict(lambda: None,
     {
         'work':
         """
-        SELECT w.gid, url.gid, url.url
+        SELECT w.gid, url.gid, url.url, lwu.id, lt.id
         FROM l_url_work AS lwu
         JOIN link AS l
             ON lwu.link=l.id
@@ -115,12 +115,14 @@ QUERIES = defaultdict(lambda: None,
             lwu.edits_pending=0
         AND
             url.edits_pending=0
+        AND
+            l.ended=FALSE
         LIMIT %s;
 
         """,
         'area':
         """
-        SELECT area.gid, url.gid, url.url
+        SELECT area.gid, url.gid, url.url, l_area_url.id, lt.id
         FROM l_area_url
         JOIN link AS l
             ON l_area_url.link=l.id
@@ -136,6 +138,8 @@ QUERIES = defaultdict(lambda: None,
             l_area_url.edits_pending=0
         AND
             url.edits_pending=0
+        AND
+            l.ended=FALSE
         AND
         area.id IN (
             SELECT area
