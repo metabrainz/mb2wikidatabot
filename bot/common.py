@@ -91,6 +91,13 @@ class IsRedirectPage(Exception):
     def __str__(self):
         return "%s is a redirect to %s" % (self.old, self.new)
 
+class PageGone(Exception):
+    def __init__(self, pagename):
+        self.pagename = pagename
+
+    def __str__(self):
+        return "%s is no more" % (self.pagename)
+
 
 class SettingsReloadedException(Exception):
     """Custom Exception class to signal that the settings have been reloaded
@@ -255,13 +262,15 @@ def get_wikidata_itempage_from_wikilink(wikilink):
         wikidatapage.get(get_redirect=True)
     except wp.exceptions.NoPageError:
         wp.error("%s does not exist" % pagename)
-        return None
+        raise PageGone(pagename)
     check_url_needs_to_be_skipped(wikilink, wikidatapage)
     return wikidatapage
 
 
 class Bot(object):
-    edit_note = "%s is only a redirect to %s"
+    redirect_edit_note = "%s is only a redirect to %s"
+
+    removed_edit_note = "%s no longer exists, marking as ended"
 
     def __init__(self):
         if not settings.mb_user or not settings.mb_password or not settings.mb_editor_id:
@@ -362,11 +371,37 @@ class Bot(object):
         :param new str:
         """
         wp.debug("Fixing the redirect from %s to %s" % (old, new), layer="")
-        self.client.edit_url(gid, old, new, self.edit_note % (old, new))
+        self.client.edit_url(gid, old, new, self.redirect_edit_note % (old, new))
+        self._performed_edit()
+
+    def end_removed(self, rel_id, link_type_id, entity_gid, url_gid, entitytype, wikipage):
+        """
+        :param rel_id str:
+        :param link_type_id str:
+        :param entity_gid str:
+        :param url_gid str:
+        :param entitytype str:
+        """
+        url_entity = {'type': 'url', 'gid': url_gid, 'url': wikipage}
+        other_entity = {'type': entitytype, 'gid': entity_gid}
+        entity0 = other_entity if (entitytype < 'url') else url_entity
+        entity1 = url_entity if (entitytype < 'url') else other_entity
+        wp.debug("Removing non existing page %s" % (wikipage), layer="")
+        self.client.edit_relationship(
+            rel_id,
+            entity0,
+            entity1,
+            link_type_id,
+            {},
+            {},
+            {},
+            True,
+            self.removed_edit_note % (wikipage),
+            False)
         self._performed_edit()
 
     def process_result(self, result):
-        entity_gid, url_gid, wikipage = result
+        entity_gid, url_gid, wikipage, rel_id, link_type_id = result
         wp.debug("» {wp} https://musicbrainz.org/{entitytype}/{gid}".format(
             entitytype=self._current_entity_type.replace("_", "-"),
             wp=wikipage,
@@ -393,7 +428,10 @@ class Bot(object):
         except ValueError as e:
             wp.output(e)
             return
-
+        except PageGone as e:
+            if self.can_edit:
+                self.end_removed(rel_id, link_type_id, entity_gid, url_gid, self._current_entity_type, wikipage)
+            return
         if itempage is None:
             wp.debug(u"There's no wikidata page for {mbid}".format(mbid=entity_gid),
                      layer="")

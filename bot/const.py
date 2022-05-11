@@ -48,22 +48,24 @@ RETRIEVED_CLAIM = wp.Claim(WIKIDATA_DATASITE, "P813")
 
 GENERIC_URL_MBID_QUERY =\
     """
-    SELECT {etype}.gid, url.gid, url.url
-    FROM l_{etype}_url
+    SELECT {etype}.gid, url.gid, url.url, l_table.id, lt.id
+    FROM l_{etype}_url l_table
     JOIN link AS l
-        ON l_{etype}_url.link=l.id
+        ON l_table.link=l.id
     JOIN link_type AS lt
         ON lt.id=l.link_type
     JOIN {etype}
         ON entity0={etype}.id
     JOIN url
-        ON l_{etype}_url.entity1=url.id
+        ON l_table.entity1=url.id
     WHERE
         lt.id IN ({wikipedia_linkid}, {wikidata_linkid})
     AND
-        l_{etype}_url.edits_pending=0
+        l_table.edits_pending=0
     AND
         url.edits_pending=0
+    AND
+        l.ended=FALSE
     LIMIT %s;
     """
 
