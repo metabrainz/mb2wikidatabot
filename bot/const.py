@@ -172,6 +172,28 @@ QUERIES = defaultdict(lambda: None,
             FROM l_area_work
         )
         LIMIT %s;
+        """,
+        'release_group':
         """
+        SELECT rg.gid, url.gid, url.url, l_table.id, lt.id
+        FROM l_release_group_url l_table
+        JOIN link AS l
+            ON l_table.link=l.id
+        JOIN link_type AS lt
+            ON lt.id=l.link_type
+        JOIN release_group rg
+            ON entity0=rg.id
+        JOIN url
+            ON l_table.entity1=url.id
+        WHERE
+            lt.id = 353
+        AND
+            l_table.edits_pending=0
+        AND
+            url.edits_pending=0
+        AND
+            l.ended=FALSE
+        LIMIT %s;
+        """,
     }
 )
