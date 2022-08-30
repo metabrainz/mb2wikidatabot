@@ -26,7 +26,7 @@ PROPERTY_IDS = {
     "place": "P1004",
     "release_group": "P436",
     "series": "P1407",
-    # "work": "P435",
+    "work": "P435",
 }
 
 
@@ -38,7 +38,7 @@ LINK_IDS = {
     "place": LinkIDsTuple(595, 594),
     "release_group": LinkIDsTuple(89, 353),
     "series": LinkIDsTuple(744, 749),
-    # "work": LinkIDsTuple(279, 351),
+    "work": LinkIDsTuple(279, 351),
 }
 
 
@@ -110,7 +110,7 @@ QUERIES = defaultdict(lambda: None,
         JOIN url
             ON lwu.entity0=url.id
         WHERE
-            lt.id IN (279, 351)
+            lt.id = 351
         AND
             lwu.edits_pending=0
         AND
