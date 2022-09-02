@@ -126,7 +126,7 @@ QUERIES = defaultdict(lambda: None,
         """,
         'genre':
         """
-        SELECT g.gid, url.gid, url.url, lu.id, lt.id
+        SELECT g.gid, url.gid, url.url, lgu.id, lt.id
         FROM l_genre_url AS lgu
         JOIN link AS l
             ON lgu.link=l.id
