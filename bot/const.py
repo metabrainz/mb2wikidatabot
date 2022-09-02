@@ -21,6 +21,8 @@ SKIP_INSTANCE_OF_ITEMS = ("Q4167410",  # disambiguation page
 PROPERTY_IDS = {
     "area": "P982",
     "artist": "P434",
+    "event": "P6423",
+    "genre": "P8052",
     "instrument": "P1330",
     "label": "P966",
     "place": "P1004",
@@ -33,6 +35,8 @@ PROPERTY_IDS = {
 LINK_IDS = {
     "area": LinkIDsTuple(355, 358),
     "artist": LinkIDsTuple(179, 352),
+    "event": LinkIDsTuple(789, 790),
+    "genre": LinkIDsTuple(None, 1087),
     "instrument": LinkIDsTuple(731, 733),
     "label": LinkIDsTuple(216, 354),
     "place": LinkIDsTuple(595, 594),
@@ -119,6 +123,28 @@ QUERIES = defaultdict(lambda: None,
             l.ended=FALSE
         LIMIT %s;
 
+        """,
+        'genre':
+        """
+        SELECT g.gid, url.gid, url.url, lu.id, lt.id
+        FROM l_genre_url AS lgu
+        JOIN link AS l
+            ON lgu.link=l.id
+        JOIN link_type AS lt
+            ON lt.id=l.link_type
+        JOIN genre AS g
+            ON entity0=g.id
+        JOIN url
+            ON lgu.entity1=url.id
+        WHERE
+            lt.id = 1087
+        AND
+            lgu.edits_pending=0
+        AND
+            url.edits_pending=0
+        AND
+            l.ended=FALSE
+        LIMIT %s;
         """,
         'area':
         """
