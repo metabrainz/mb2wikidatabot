@@ -1,4 +1,4 @@
-FROM metabrainz/python:3.8-20210115
+FROM metabrainz/python:3.9-focal-20220315
 
 ENV DOCKERIZE_VERSION v0.6.1
 RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
@@ -8,7 +8,7 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
 COPY ACCC4CF8.asc /tmp/
 RUN apt-key add /tmp/ACCC4CF8.asc && rm -f /tmp/ACCC4CF8.asc
 ENV PG_MAJOR 12
-RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main' $PG_MAJOR > /etc/apt/sources.list.d/pgdg.list
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" $PG_MAJOR > /etc/apt/sources.list.d/pgdg.list
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
             build-essential \
