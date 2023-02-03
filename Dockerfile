@@ -23,8 +23,8 @@ RUN mkdir /code
 WORKDIR /code
 
 COPY . /code
-RUN pip install -r requirements.txt
-RUN pip install setuptools
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir setuptools
 
 # runit service files
 COPY ./docker/consul-template-mb2wdbot.conf /etc/consul-template-mb2wdbot.conf
