@@ -27,6 +27,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir setuptools
 
 # runit service files
+RUN touch /etc/service/cron/down
 COPY ./docker/consul-template-mb2wdbot.conf /etc/consul-template-mb2wdbot.conf
 COPY ./docker/wikidata-bot.service /etc/service/wikidata-bot/run
 RUN chmod 755 /etc/service/wikidata-bot/run
