@@ -358,6 +358,9 @@ class Bot(object):
             return
         else:
             wp.debug("Adding the source Claim", layer="")
+            today = datetime.datetime.today()
+            date = wp.WbTime(year=today.year, month=today.month, day=today.day)
+            const.RETRIEVED_CLAIM.setTarget(date)
             claim.addSources(
                 [const.MUSICBRAINZ_CLAIM.copy(), const.RETRIEVED_CLAIM.copy()],
                 bot=True,
@@ -492,9 +495,6 @@ def mainloop():
             entities = arg[len("-entities:"):].split(",")
 
     const.MUSICBRAINZ_CLAIM.setTarget(const.MUSICBRAINZ_WIKIDATAPAGE)
-    today = datetime.datetime.today()
-    date = wp.WbTime(year=today.year, month=today.month, day=today.day)
-    const.RETRIEVED_CLAIM.setTarget(date)
     setup_db()
 
     for entitytype in entities:
