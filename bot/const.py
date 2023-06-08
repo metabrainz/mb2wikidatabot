@@ -49,10 +49,11 @@ LINK_IDS = {
 MUSICBRAINZ_WIKIDATAPAGE = wp.ItemPage(WIKIDATA_DATASITE, "Q14005")
 MUSICBRAINZ_CLAIM = wp.Claim(WIKIDATA_DATASITE, "P248")
 RETRIEVED_CLAIM = wp.Claim(WIKIDATA_DATASITE, "P813")
+NAMED_AS_CLAIM = wp.Claim(WIKIDATA_DATASITE, "P1810")
 
 GENERIC_URL_MBID_QUERY =\
     """
-    SELECT {etype}.gid, url.gid, url.url, l_table.id, lt.id
+    SELECT {etype}.gid, url.gid, url.url, l_table.id, lt.id, {etype}.name
     FROM l_{etype}_url l_table
     JOIN link AS l
         ON l_table.link=l.id
@@ -103,7 +104,7 @@ QUERIES = defaultdict(lambda: None,
     {
         'work':
         """
-        SELECT w.gid, url.gid, url.url, lwu.id, lt.id
+        SELECT w.gid, url.gid, url.url, lwu.id, lt.id, w.name
         FROM l_url_work AS lwu
         JOIN link AS l
             ON lwu.link=l.id
@@ -126,7 +127,7 @@ QUERIES = defaultdict(lambda: None,
         """,
         'genre':
         """
-        SELECT g.gid, url.gid, url.url, lgu.id, lt.id
+        SELECT g.gid, url.gid, url.url, lgu.id, lt.id, g.name
         FROM l_genre_url AS lgu
         JOIN link AS l
             ON lgu.link=l.id
@@ -148,7 +149,7 @@ QUERIES = defaultdict(lambda: None,
         """,
         'area':
         """
-        SELECT area.gid, url.gid, url.url, l_area_url.id, lt.id
+        SELECT area.gid, url.gid, url.url, l_area_url.id, lt.id, area.name
         FROM l_area_url
         JOIN link AS l
             ON l_area_url.link=l.id
@@ -201,7 +202,7 @@ QUERIES = defaultdict(lambda: None,
         """,
         'release_group':
         """
-        SELECT rg.gid, url.gid, url.url, l_table.id, lt.id
+        SELECT rg.gid, url.gid, url.url, l_table.id, lt.id, rg.name
         FROM l_release_group_url l_table
         JOIN link AS l
             ON l_table.link=l.id

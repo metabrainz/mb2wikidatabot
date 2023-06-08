@@ -331,13 +331,15 @@ class Bot(object):
         if not self.number_of_allowed_edits:
             wp.output("Reached the limit of open edits, disabling editing")
 
-    def add_mbid_claim_to_item(self, item, mbid):
+    def add_mbid_claim_to_item(self, item, mbid, entity_name):
         """
-        Adds a claim with pid `pid` with value `mbid` to `item` and call `donefunc`
-        with `mbid` to signal the completion.
+        Adds a claim with pid `pid` with value `mbid` to `item`,
+        with qualifiers to indicate the MB source and name,
+        and call `donefunc` with `mbid` to signal the completion.
 
         :type pid: str
         :type mbid: str
+        :type entity_name: str
         :type item: pywikibot.ItemPage
         """
         claim = wp.Claim(const.WIKIDATA_DATASITE, self.property_id)
@@ -357,7 +359,14 @@ class Bot(object):
             wp.warning(e)
             return
         else:
-            wp.debug("Adding the source Claim", layer="")
+            wp.debug("Adding the named as qualifier", layer="")
+            const.NAMED_AS_CLAIM.setTarget(entity_name)
+            claim.addQualifier(
+                const.NAMED_AS_CLAIM.copy(),
+                bot=True,
+            )
+
+            wp.debug("Adding the source claims", layer="")
             today = datetime.datetime.today()
             date = wp.WbTime(year=today.year, month=today.month, day=today.day)
             const.RETRIEVED_CLAIM.setTarget(date)
@@ -404,7 +413,7 @@ class Bot(object):
         self._performed_edit()
 
     def process_result(self, result):
-        entity_gid, url_gid, wikipage, rel_id, link_type_id = result
+        entity_gid, url_gid, wikipage, rel_id, link_type_id, entity_name = result
         wp.debug("» {wp} https://musicbrainz.org/{entitytype}/{gid}".format(
             entitytype=self._current_entity_type.replace("_", "-"),
             wp=wikipage,
@@ -452,7 +461,7 @@ class Bot(object):
 
         wp.debug("{mbid} is not linked in Wikidata".format(
                   mbid=entity_gid), layer="")
-        self.add_mbid_claim_to_item(itempage, entity_gid)
+        self.add_mbid_claim_to_item(itempage, entity_gid, entity_name)
 
 
 def entity_type_loop(bot, entitytype, limit):
