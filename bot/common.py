@@ -347,6 +347,23 @@ class Bot(object):
         wp.debug(u"Adding property {pid}, value {mbid} to {title}".format
                  (pid=self.property_id, mbid=mbid, title=item.title()),
                  layer="")
+
+        wp.debug("Adding the named as qualifier", layer="")
+        const.NAMED_AS_CLAIM.setTarget(entity_name)
+        claim.addQualifier(
+            const.NAMED_AS_CLAIM.copy(),
+            bot=True,
+        )
+
+        wp.debug("Adding the source claims", layer="")
+        today = datetime.datetime.today()
+        date = wp.WbTime(year=today.year, month=today.month, day=today.day)
+        const.RETRIEVED_CLAIM.setTarget(date)
+        claim.addSources(
+            [const.MUSICBRAINZ_CLAIM.copy(), const.RETRIEVED_CLAIM.copy()],
+            bot=True,
+        )
+
         if wp.config.simulate:
             wp.output("Simulation, no property has been added")
             return
@@ -359,21 +376,6 @@ class Bot(object):
             wp.warning(e)
             return
         else:
-            wp.debug("Adding the named as qualifier", layer="")
-            const.NAMED_AS_CLAIM.setTarget(entity_name)
-            claim.addQualifier(
-                const.NAMED_AS_CLAIM.copy(),
-                bot=True,
-            )
-
-            wp.debug("Adding the source claims", layer="")
-            today = datetime.datetime.today()
-            date = wp.WbTime(year=today.year, month=today.month, day=today.day)
-            const.RETRIEVED_CLAIM.setTarget(date)
-            claim.addSources(
-                [const.MUSICBRAINZ_CLAIM.copy(), const.RETRIEVED_CLAIM.copy()],
-                bot=True,
-            )
             self.donefunc(mbid)
 
     def fix_redirect(self, gid, old, new):
