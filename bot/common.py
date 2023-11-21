@@ -478,7 +478,8 @@ def entity_type_loop(bot, entitytype, limit):
                               already_processed_results]
 
     if not results_to_process:
-        wp.output("No more unprocessed entries in MB")
+        wp.output("No more unprocessed entries of type {etype} in MB".format(
+            etype=entitytype))
     else:
         wp.output("Processing {amount} {etype}s".format(amount=len(results_to_process),
                                                         etype=entitytype))
