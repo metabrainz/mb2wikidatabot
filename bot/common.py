@@ -337,8 +337,7 @@ class Bot(object):
         claim = wp.Claim(const.WIKIDATA_DATASITE, self.property_id)
         claim.setTarget(mbid)
         wp.output(u"Adding property {pid}, value {mbid} to {title}".format
-                 (pid=self.property_id, mbid=mbid, title=item.title()),
-                 layer="")
+                 (pid=self.property_id, mbid=mbid, title=item.title()))
 
         wp.debug("Adding the named as qualifier", layer="")
         const.NAMED_AS_CLAIM.setTarget(entity_name)
@@ -376,7 +375,7 @@ class Bot(object):
         :param old str:
         :param new str:
         """
-        wp.output("Fixing the redirect from %s to %s" % (old, new), layer="")
+        wp.output("Fixing the redirect from %s to %s" % (old, new))
         self.client.edit_url(gid, old, new, self.redirect_edit_note % (old, new))
         self._performed_edit()
 
@@ -392,7 +391,7 @@ class Bot(object):
         other_entity = {'type': entitytype, 'gid': entity_gid}
         entity0 = other_entity if (entitytype < 'url') else url_entity
         entity1 = url_entity if (entitytype < 'url') else other_entity
-        wp.output("Removing non existing page %s" % (wikipage), layer="")
+        wp.output("Removing non existing page %s" % (wikipage))
         self.client.edit_relationship(
             rel_id,
             entity0,
@@ -412,7 +411,7 @@ class Bot(object):
             entitytype=self._current_entity_type.replace("_", "-"),
             wp=wikipage,
             gid=entity_gid
-        ), layer="")
+        ))
         try:
             itempage = get_wikidata_itempage_from_wikilink(wikipage)
         except wp.exceptions.SiteDefinitionError:
@@ -427,7 +426,7 @@ class Bot(object):
                                                                           reason=e))
             return
         except IsRedirectPage as e:
-            wp.output("{page} is a redirect".format(page=wikipage), layer="")
+            wp.output("{page} is a redirect".format(page=wikipage))
             if self.can_edit:
                 self.fix_redirect(url_gid, e.old, e.new)
             return
@@ -439,8 +438,8 @@ class Bot(object):
                 self.end_removed(rel_id, link_type_id, entity_gid, url_gid, self._current_entity_type, wikipage)
             return
         if itempage is None:
-            wp.warning(u"There's no wikidata page for {mbid}".format(mbid=entity_gid),
-                     layer="")
+            wp.warning(u"There's no wikidata page for {mbid}".format(
+                mbid=entity_gid))
             return
 
         if any((key.lower() == self.property_id.lower() and
@@ -449,12 +448,12 @@ class Bot(object):
             wp.debug(u"{page} already has property {pid} with value {mbid}".
                      format(page=wikipage,
                             mbid=entity_gid,
-                            pid=self.property_id), layer="")
+                            pid=self.property_id))
             self.donefunc(entity_gid)
             return
 
         wp.output("{mbid} is not linked in Wikidata".format(
-                  mbid=entity_gid), layer="")
+                  mbid=entity_gid))
         self.add_mbid_claim_to_item(itempage, entity_gid, entity_name)
 
 
