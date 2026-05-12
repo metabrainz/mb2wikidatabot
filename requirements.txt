@@ -2,4 +2,4 @@ psycopg2
 mechanize
 pywikibot==11.2.0
 mwparserfromhell>=0.5.0
--e bot/musicbrainz_bot
+musicbrainz-bot @ git+https://github.com/metabrainz/musicbrainz-bot.git@862f80c4269352dd8c6f71d9a2d964b8410c229a
