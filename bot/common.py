@@ -22,7 +22,7 @@ if settings.mb_user is None or settings.mb_password is None:
     wp.output("No MusicBrainz login data, no redirects will be fixed")
     editing = None
 else:
-    from .musicbrainz_bot import editing
+    from musicbrainz_bot.musicbrainz_bot import editing
 from sys import version_info
 from time import sleep
 from urllib.parse import urlparse
