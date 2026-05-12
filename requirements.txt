@@ -1,4 +1,4 @@
 psycopg2
 mechanize
-pywikibot==8.5.1
+pywikibot==11.2.0
 mwparserfromhell>=0.5.0
