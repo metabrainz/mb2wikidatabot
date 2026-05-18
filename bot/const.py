@@ -106,7 +106,9 @@ GENERIC_CREATE_PROCESSED_TABLE_QUERY = """
 QUERIES = defaultdict(
     lambda: None,
     {
-        "work": """
+        # Custom queries for entity types where the generic template doesn't fit.
+        # Link type IDs here must match the values in LINK_IDS above.
+        "work": f"""
         SELECT w.gid, url.gid, url.url, lwu.id, lt.id, w.name
         FROM l_url_work AS lwu
         JOIN link AS l
@@ -118,7 +120,7 @@ QUERIES = defaultdict(
         JOIN url
             ON lwu.entity0=url.id
         WHERE
-            lt.id = 351
+            lt.id = {LINK_IDS["work"].wikidata}
         AND
             lwu.edits_pending=0
         AND
@@ -128,7 +130,7 @@ QUERIES = defaultdict(
         LIMIT %s;
 
         """,
-        "genre": """
+        "genre": f"""
         SELECT g.gid, url.gid, url.url, lgu.id, lt.id, g.name
         FROM l_genre_url AS lgu
         JOIN link AS l
@@ -140,7 +142,7 @@ QUERIES = defaultdict(
         JOIN url
             ON lgu.entity1=url.id
         WHERE
-            lt.id = 1087
+            lt.id = {LINK_IDS["genre"].wikidata}
         AND
             lgu.edits_pending=0
         AND
@@ -149,7 +151,7 @@ QUERIES = defaultdict(
             l.ended=FALSE
         LIMIT %s;
         """,
-        "area": """
+        "area": f"""
         SELECT area.gid, url.gid, url.url, l_area_url.id, lt.id, area.name
         FROM l_area_url
         JOIN link AS l
@@ -161,7 +163,7 @@ QUERIES = defaultdict(
         JOIN url
             ON l_area_url.entity1=url.id
         WHERE
-            lt.id IN (355, 358)
+            lt.id IN ({LINK_IDS["area"].wikipedia}, {LINK_IDS["area"].wikidata})
         AND
             l_area_url.edits_pending=0
         AND
@@ -201,7 +203,7 @@ QUERIES = defaultdict(
         )
         LIMIT %s;
         """,
-        "release_group": """
+        "release_group": f"""
         SELECT rg.gid, url.gid, url.url, l_table.id, lt.id, rg.name
         FROM l_release_group_url l_table
         JOIN link AS l
@@ -213,7 +215,7 @@ QUERIES = defaultdict(
         JOIN url
             ON l_table.entity1=url.id
         WHERE
-            lt.id = 353
+            lt.id = {LINK_IDS["release_group"].wikidata}
         AND
             l_table.edits_pending=0
         AND
