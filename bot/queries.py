@@ -7,6 +7,10 @@ Pure string formatting — no database or network dependencies.
 def create_url_mbid_query(entitytype, linkids, *, generic_query, custom_queries):
     """Creates a specific query for `entitytype` and `linkids`.
 
+    Note: entitytype is interpolated into SQL via str.format(). This is safe
+    because entity types come from the hardcoded PROPERTY_IDS dict keys, never
+    from user input.
+
     Args:
         entitytype: The entity type string (e.g. "artist").
         linkids: A LinkIDsTuple with .wikipedia and .wikidata attributes.
