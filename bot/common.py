@@ -58,24 +58,19 @@ from .exceptions import (
 )
 
 
+from .queries import create_already_processed_query as _create_already_processed_query
+from .queries import create_processed_table_query as _create_processed_table_query
+from .queries import create_url_mbid_query as _create_url_mbid_query
+
+
 def create_url_mbid_query(entitytype, linkids):
-    """Creates a specific query for `entitytype` and `linkids` from
-    `const.GENERIC_URL_MBID_QUERY`.
-    """
-    custom = const.QUERIES[entitytype]
-    if custom is not None:
-        return custom
-    return const.GENERIC_URL_MBID_QUERY.format(
-        etype=entitytype, wikipedia_linkid=linkids.wikipedia, wikidata_linkid=linkids.wikidata
+    return _create_url_mbid_query(
+        entitytype, linkids, generic_query=const.GENERIC_URL_MBID_QUERY, custom_queries=const.QUERIES
     )
 
 
 def create_already_processed_query(entitytype):
-    """Creates a specific query for `entitytype` from
-    `CONST.GENERIC_ALREADY_PROCESSED_QUERY`
-
-    """
-    return const.GENERIC_ALREADY_PROCESSED_QUERY.format(etype=entitytype)
+    return _create_already_processed_query(entitytype, template=const.GENERIC_ALREADY_PROCESSED_QUERY)
 
 
 def create_done_func(entitytype):
@@ -91,10 +86,7 @@ def create_done_func(entitytype):
 
 
 def create_processed_table_query(entitytype):
-    """Creates a specific query for `entitytype` from
-    `const.GENERIC_CREATE_PROCESSED_TABLE_QUERY`.
-    """
-    return const.GENERIC_CREATE_PROCESSED_TABLE_QUERY.format(etype=entitytype)
+    return _create_processed_table_query(entitytype, template=const.GENERIC_CREATE_PROCESSED_TABLE_QUERY)
 
 
 def reload_settings():
