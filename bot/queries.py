@@ -3,8 +3,17 @@
 Pure string formatting — no database or network dependencies.
 """
 
+from typing import Protocol
 
-def create_url_mbid_query(entitytype, linkids, *, generic_query, custom_queries):
+
+class LinkIDs(Protocol):
+    wikipedia: int | None
+    wikidata: int
+
+
+def create_url_mbid_query(
+    entitytype: str, linkids: LinkIDs, *, generic_query: str, custom_queries: dict[str, str | None]
+) -> str:
     """Creates a specific query for `entitytype` and `linkids`.
 
     Note: entitytype is interpolated into SQL via str.format(). This is safe
@@ -23,11 +32,11 @@ def create_url_mbid_query(entitytype, linkids, *, generic_query, custom_queries)
     return generic_query.format(etype=entitytype, wikipedia_linkid=linkids.wikipedia, wikidata_linkid=linkids.wikidata)
 
 
-def create_already_processed_query(entitytype, *, template):
+def create_already_processed_query(entitytype: str, *, template: str) -> str:
     """Creates a specific query for `entitytype` from a template."""
     return template.format(etype=entitytype)
 
 
-def create_processed_table_query(entitytype, *, template):
+def create_processed_table_query(entitytype: str, *, template: str) -> str:
     """Creates a CREATE TABLE query for `entitytype` from a template."""
     return template.format(etype=entitytype)

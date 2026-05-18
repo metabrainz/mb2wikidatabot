@@ -2,7 +2,9 @@
 retry + exponential backoff."""
 
 import urllib.error
+from collections.abc import Callable
 from time import sleep
+from typing import Any
 
 import pywikibot as wp
 
@@ -11,7 +13,7 @@ INITIAL_BACKOFF = 10  # seconds
 BACKOFF_FACTOR = 2
 
 
-def _get_retry_after(exc):
+def _get_retry_after(exc: urllib.error.HTTPError) -> int | None:
     """Extract Retry-After header value from an HTTPError, or return None."""
     try:
         val = exc.headers.get("Retry-After")
@@ -22,7 +24,7 @@ def _get_retry_after(exc):
     return None
 
 
-def mb_request_with_retry(func, *args, **kwargs):
+def mb_request_with_retry(func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
     """Call func(*args, **kwargs) with retry on HTTP 429/503.
 
     Raises the original exception if retries are exhausted.
