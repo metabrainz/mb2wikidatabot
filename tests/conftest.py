@@ -16,5 +16,5 @@ mock_wp.exceptions.InvalidTitleError = type("InvalidTitleError", (Exception,), {
 mock_wp.exceptions.OtherPageSaveError = type("OtherPageSaveError", (Exception,), {})
 mock_wp.config.simulate = False
 
-sys.modules.setdefault("pywikibot", mock_wp)
-sys.modules.setdefault("pywikibot.exceptions", mock_wp.exceptions)
+sys.modules["pywikibot"] = mock_wp
+sys.modules["pywikibot.exceptions"] = mock_wp.exceptions
