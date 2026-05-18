@@ -1,0 +1,33 @@
+[project]
+name = "mb2wikidatabot"
+version = "0.1.0"
+description = "Bot to add MusicBrainz IDs to Wikidata"
+authors = [{name = "MetaBrainz Foundation"}]
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "psycopg2>=2.9",
+    "mechanize>=0.4",
+    "pywikibot==11.2.0",
+    "mwparserfromhell>=0.5.0",
+    "musicbrainz-bot @ git+https://github.com/metabrainz/musicbrainz-bot.git@862f80c4269352dd8c6f71d9a2d964b8410c229a",
+]
+
+[project.urls]
+Repository = "https://github.com/metabrainz/mb2wikidatabot"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.0",
+    "ruff>=0.15.0",
+]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
