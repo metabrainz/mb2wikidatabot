@@ -22,3 +22,6 @@ mb_password="{{template "KEY" "mb_password"}}"
 mb_editor_id="{{ template "KEY" "mb_editor_id"}}"
 
 sleep_time_in_seconds = 3600
+
+# Delay in seconds between MusicBrainz edits to avoid rate limiting.
+mb_edit_delay = 5

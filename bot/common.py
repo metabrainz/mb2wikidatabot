@@ -328,6 +328,7 @@ class Bot(object):
         self.number_of_allowed_edits -= 1
         if not self.number_of_allowed_edits:
             wp.output("Reached the limit of open edits, disabling editing")
+        sleep(settings.mb_edit_delay)
 
     def add_mbid_claim_to_item(self, item, mbid, entity_name):
         """

@@ -2,6 +2,9 @@ readonly_connection_string="dbname=musicbrainz user=musicbrainz"
 readwrite_connection_string="dbname=musicbrainz user=musicbrainz"
 sleep_time_in_seconds = 3600
 
+# Delay in seconds between MusicBrainz edits to avoid rate limiting.
+mb_edit_delay = 5
+
 # mb_user and mb_password are only required if the bot should fix links to
 # redirect pages in MusicBrainz. If that is not desired, leave them as `None`.
 mb_user=None
