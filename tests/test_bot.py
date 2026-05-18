@@ -53,6 +53,66 @@ class TestBotPerformedEdit:
         bot._performed_edit()
         mock_sleep.assert_called_once_with(settings.mb_edit_delay)
 
+    @patch("bot.common.sleep")
+    def test_disables_editing_at_zero(self, mock_sleep, bot):
+        bot.number_of_allowed_edits = 1
+        bot._performed_edit()
+        assert bot.number_of_allowed_edits == 0
+        assert bot.can_edit is False
+
+
+class TestBotUpdateRateLimits:
+    def test_sets_edits_from_client(self, bot):
+        bot.client.edits_left.return_value = 42
+        bot.update_rate_limits()
+        assert bot.number_of_allowed_edits == 42
+
+    def test_falls_back_to_zero_on_error(self, bot):
+        bot.client.edits_left.side_effect = Exception("connection refused")
+        bot.update_rate_limits()
+        assert bot.number_of_allowed_edits == 0
+
+    def test_no_client_sets_zero(self, bot):
+        bot.client = None
+        bot.update_rate_limits()
+        assert bot.number_of_allowed_edits == 0
+
+
+class TestBotFixRedirect:
+    @patch("bot.common.sleep")
+    @patch("bot.common.mb_request_with_retry")
+    def test_calls_edit_url_with_retry(self, mock_retry, mock_sleep, bot):
+        bot.fix_redirect("gid-1", "http://old", "http://new")
+        mock_retry.assert_called_once_with(
+            bot.client.edit_url, "gid-1", "http://old", "http://new", "http://old is only a redirect to http://new"
+        )
+
+    @patch("bot.common.sleep")
+    @patch("bot.common.mb_request_with_retry")
+    def test_decrements_edits_after_fix(self, mock_retry, mock_sleep, bot):
+        bot.number_of_allowed_edits = 5
+        bot.fix_redirect("gid-1", "http://old", "http://new")
+        assert bot.number_of_allowed_edits == 4
+
+
+class TestBotEndRemoved:
+    @patch("bot.common.sleep")
+    @patch("bot.common.mb_request_with_retry")
+    def test_calls_edit_relationship_with_retry(self, mock_retry, mock_sleep, bot):
+        bot.end_removed("rel-1", "lt-1", "entity-gid", "url-gid", "artist", "http://gone")
+        mock_retry.assert_called_once()
+        args = mock_retry.call_args[0]
+        assert args[0] == bot.client.edit_relationship
+        # ended=True is the 8th positional arg to edit_relationship
+        assert args[8] is True
+
+    @patch("bot.common.sleep")
+    @patch("bot.common.mb_request_with_retry")
+    def test_decrements_edits_after_end(self, mock_retry, mock_sleep, bot):
+        bot.number_of_allowed_edits = 3
+        bot.end_removed("rel-1", "lt-1", "entity-gid", "url-gid", "artist", "http://gone")
+        assert bot.number_of_allowed_edits == 2
+
 
 class TestBotProcessResult:
     def _make_result(
