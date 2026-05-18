@@ -1,4 +1,11 @@
 # coding: utf-8
+"""Bot orchestration: main loop, database access, and the Bot class.
+
+This module wires together the pure-logic modules (checks, queries, exceptions,
+mb_client) with pywikibot, psycopg2, and the musicbrainz-bot editing library.
+It contains module-level initialization (DB connections, signal handlers) and
+is not directly importable in tests without mocking pywikibot.
+"""
 import datetime
 from importlib import reload
 from time import sleep
@@ -33,6 +40,7 @@ from .mb_client import mb_request_with_retry
 
 # Set up a signal handler to reload the settings on SIGHUP
 def signal_handler(signal, frame):
+    """Handle SIGHUP by reloading settings and restarting the main loop."""
     wp.output("HUP received")
     reload_settings()
     raise SettingsReloadedException("Settings have been reloaded during HUP")
@@ -83,6 +91,7 @@ def create_processed_table_query(entitytype):
 
 
 def reload_settings():
+    """Reload bot/settings.py and log the old/new connection strings."""
     wp.output("Old RO connection: {}".format(settings.readonly_connection_string))
     wp.output("Old RW connection: {}".format(settings.readwrite_connection_string))
     wp.output("Old mb_user {}".format(repr(settings.mb_user)))
@@ -93,6 +102,7 @@ def reload_settings():
 
 
 def setup_db():
+    """Initialize (or reinitialize) the readonly and readwrite DB connections."""
     global readonly_db
     if readonly_db is not None:
         readonly_db.close()
@@ -107,6 +117,7 @@ def setup_db():
 
 
 def create_table(query):
+    """Execute a CREATE TABLE query on the readwrite database."""
     cur = readwrite_db.cursor()
     cur.execute(query)
     readwrite_db.commit()
@@ -156,6 +167,13 @@ def get_wikidata_itempage_from_wikilink(wikilink):
 
 
 class Bot(object):
+    """Main bot that processes MusicBrainz entities and adds MBIDs to Wikidata.
+
+    Handles the decision logic for each entity: resolve its Wikipedia/Wikidata
+    URL, check if the MBID claim already exists, and either add it or handle
+    redirects/dead links on the MusicBrainz side.
+    """
+
     redirect_edit_note = "%s is only a redirect to %s"
 
     removed_edit_note = "%s no longer exists, marking as ended"
@@ -271,23 +289,13 @@ class Bot(object):
             self.donefunc(mbid)
 
     def fix_redirect(self, gid, old, new):
-        """
-        :param gid str:
-        :param old str:
-        :param new str:
-        """
+        """Edit the URL in MusicBrainz to point to the redirect target."""
         wp.output("Fixing the redirect from %s to %s" % (old, new))
         mb_request_with_retry(self.client.edit_url, gid, old, new, self.redirect_edit_note % (old, new))
         self._performed_edit()
 
     def end_removed(self, rel_id, link_type_id, entity_gid, url_gid, entitytype, wikipage):
-        """
-        :param rel_id str:
-        :param link_type_id str:
-        :param entity_gid str:
-        :param url_gid str:
-        :param entitytype str:
-        """
+        """Mark a URL relationship as ended in MusicBrainz (page no longer exists)."""
         url_entity = {"type": "url", "gid": url_gid, "url": wikipage}
         other_entity = {"type": entitytype, "gid": entity_gid}
         entity0 = other_entity if (entitytype < "url") else url_entity
@@ -309,6 +317,14 @@ class Bot(object):
         self._performed_edit()
 
     def process_result(self, result):
+        """Process a single entity result from the database.
+
+        Resolves the Wikipedia/Wikidata URL, checks skip conditions, and either:
+        - Adds the MBID claim to Wikidata if not already present
+        - Fixes a redirect URL in MusicBrainz
+        - Ends a relationship for a dead Wikipedia page
+        - Skips disambiguation/forbidden pages
+        """
         entity_gid, url_gid, wikipage, rel_id, link_type_id, entity_name = result
         wp.output(
             "» {wp} https://musicbrainz.org/{entitytype}/{gid}".format(
@@ -391,6 +407,7 @@ def entity_type_loop(bot, entitytype, limit):
 
 
 def mainloop():
+    """Main entry point: parse args, set up DB, and loop through entity types forever."""
     limit = None
     entities = sorted(const.PROPERTY_IDS.keys())
 

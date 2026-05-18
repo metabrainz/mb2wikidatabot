@@ -1,15 +1,14 @@
 #!/usr/bin/env python
-"""
-This is a bot to automatically add MBIDs to Wikidata pages.
+"""Entry point for the MusicBrainz-to-Wikidata bot.
 
-Usage: python run.py [options]
+Runs the main loop with automatic recovery from database errors and
+settings reloads (via SIGHUP).
 
-Command line options:
+Usage: uv run python run.py [options]
 
--createtable: Create the table storing the processed MBIDs
--entites: A comma-separated list of entity types for which MBIDs are to be
-          added to their Wikidata pages. Example: `-entities:artist,work,place`
--limit:x: Only handle x entities of *each* type
+Options:
+    -limit:N              Only process N entities of each type
+    -entities:artist,work Only process specific entity types
 """
 
 import traceback
