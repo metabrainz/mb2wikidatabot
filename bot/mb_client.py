@@ -6,7 +6,6 @@ from time import sleep
 
 import pywikibot as wp
 
-
 MAX_RETRIES = 5
 INITIAL_BACKOFF = 10  # seconds
 BACKOFF_FACTOR = 2

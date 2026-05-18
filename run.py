@@ -11,13 +11,13 @@ Command line options:
           added to their Wikidata pages. Example: `-entities:artist,work,place`
 -limit:x: Only handle x entities of *each* type
 """
-import sys
+
 import traceback
 from time import sleep
 
 import psycopg2
-import pywikibot as wp
-from bot.common import mainloop, SettingsReloadedException
+
+from bot.common import SettingsReloadedException, mainloop
 
 while True:
     try:

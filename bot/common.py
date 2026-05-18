@@ -1,18 +1,21 @@
 # coding: utf-8
+import datetime
 from importlib import reload
 from time import sleep
-import datetime
+
 import psycopg2 as pg
 import psycopg2.extensions
+
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
-import pywikibot as wp
 import signal
 
+import pywikibot as wp
 
 while True:
     try:
         from . import const, settings
+
         break
     except ImportError:
         wp.output("No config info available yet. Sleeping 2 seconds.")
@@ -23,10 +26,10 @@ if settings.mb_user is None or settings.mb_password is None:
     editing = None
 else:
     from musicbrainz_bot import editing
-from .mb_client import mb_request_with_retry
-from sys import version_info
 from time import sleep
 from urllib.parse import urlparse
+
+from .mb_client import mb_request_with_retry
 
 
 # Set up a signal handler to reload the settings on SIGHUP
@@ -67,8 +70,7 @@ class InstanceOfForbidden(SkipPage):
         self.item_id = item_id
 
     def __str__(self):
-        return "{url} is an instance of {id}".format(url=self.url,
-                                                     id=self.item_id)
+        return "{url} is an instance of {id}".format(url=self.url, id=self.item_id)
 
 
 class IsRedirectWithItemPage(SkipPage):
@@ -84,6 +86,7 @@ class IsRedirectPage(Exception):
     def __str__(self):
         return "%s is a redirect to %s" % (self.old, self.new)
 
+
 class PageGone(Exception):
     def __init__(self, pagename):
         self.pagename = pagename
@@ -95,6 +98,7 @@ class PageGone(Exception):
 class SettingsReloadedException(Exception):
     """Custom Exception class to signal that the settings have been reloaded
     during SIGHUP processing."""
+
     pass
 
 
@@ -105,9 +109,9 @@ def create_url_mbid_query(entitytype, linkids):
     custom = const.QUERIES[entitytype]
     if custom is not None:
         return custom
-    return const.GENERIC_URL_MBID_QUERY.format(etype=entitytype,
-                                               wikipedia_linkid=linkids.wikipedia,
-                                               wikidata_linkid=linkids.wikidata)
+    return const.GENERIC_URL_MBID_QUERY.format(
+        etype=entitytype, wikipedia_linkid=linkids.wikipedia, wikidata_linkid=linkids.wikidata
+    )
 
 
 def create_already_processed_query(entitytype):
@@ -125,7 +129,7 @@ def create_done_func(entitytype):
     query = const.GENERIC_DONE_QUERY.format(etype=entitytype)
 
     def func(mbid):
-        do_readwrite_query(query, {'mbid': mbid})
+        do_readwrite_query(query, {"mbid": mbid})
 
     return func
 
@@ -151,15 +155,13 @@ def setup_db():
     global readonly_db
     if readonly_db is not None:
         readonly_db.close()
-    readonly_db = pg.connect(settings.readonly_connection_string,
-                             application_name="mb2wikidatabot_readonly")
+    readonly_db = pg.connect(settings.readonly_connection_string, application_name="mb2wikidatabot_readonly")
     readonly_db.autocommit = True
 
     global readwrite_db
     if readwrite_db is not None:
         readwrite_db.close()
-    readwrite_db = pg.connect(settings.readwrite_connection_string,
-                              application_name="mb2wikidatabot_readwrite")
+    readwrite_db = pg.connect(settings.readwrite_connection_string, application_name="mb2wikidatabot_readwrite")
     readwrite_db.autocommit = True
 
 
@@ -271,10 +273,9 @@ class Bot(object):
             self.client = None
         else:
             wp.output("MusicBrainz credentials are configured, enabling editing.")
-            self.client = editing.MusicBrainzClient(settings.mb_user,
-                                                    settings.mb_password,
-                                                    "https://musicbrainz.org",
-                                                    settings.mb_editor_id)
+            self.client = editing.MusicBrainzClient(
+                settings.mb_user, settings.mb_password, "https://musicbrainz.org", settings.mb_editor_id
+            )
             self.update_rate_limits()
 
         self._current_entity_type = None
@@ -310,8 +311,7 @@ class Bot(object):
             self.number_of_allowed_edits = 0
             return
         try:
-            self.number_of_allowed_edits = mb_request_with_retry(
-                self.client.edits_left)
+            self.number_of_allowed_edits = mb_request_with_retry(self.client.edits_left)
         except Exception as e:
             wp.warning("Could not determine remaining edits: %s" % e)
             self.number_of_allowed_edits = 0
@@ -343,8 +343,9 @@ class Bot(object):
         """
         claim = wp.Claim(const.WIKIDATA_DATASITE, self.property_id)
         claim.setTarget(mbid)
-        wp.output(u"Adding property {pid}, value {mbid} to {title}".format
-                 (pid=self.property_id, mbid=mbid, title=item.title()))
+        wp.output(
+            "Adding property {pid}, value {mbid} to {title}".format(pid=self.property_id, mbid=mbid, title=item.title())
+        )
 
         wp.debug("Adding the named as qualifier", layer="")
         const.NAMED_AS_CLAIM.setTarget(entity_name)
@@ -383,8 +384,7 @@ class Bot(object):
         :param new str:
         """
         wp.output("Fixing the redirect from %s to %s" % (old, new))
-        mb_request_with_retry(self.client.edit_url, gid, old, new,
-                              self.redirect_edit_note % (old, new))
+        mb_request_with_retry(self.client.edit_url, gid, old, new, self.redirect_edit_note % (old, new))
         self._performed_edit()
 
     def end_removed(self, rel_id, link_type_id, entity_gid, url_gid, entitytype, wikipage):
@@ -395,10 +395,10 @@ class Bot(object):
         :param url_gid str:
         :param entitytype str:
         """
-        url_entity = {'type': 'url', 'gid': url_gid, 'url': wikipage}
-        other_entity = {'type': entitytype, 'gid': entity_gid}
-        entity0 = other_entity if (entitytype < 'url') else url_entity
-        entity1 = url_entity if (entitytype < 'url') else other_entity
+        url_entity = {"type": "url", "gid": url_gid, "url": wikipage}
+        other_entity = {"type": entitytype, "gid": entity_gid}
+        entity0 = other_entity if (entitytype < "url") else url_entity
+        entity1 = url_entity if (entitytype < "url") else other_entity
         wp.output("Removing non existing page %s" % (wikipage))
         mb_request_with_retry(
             self.client.edit_relationship,
@@ -411,28 +411,28 @@ class Bot(object):
             {},
             True,
             self.removed_edit_note % (wikipage),
-            False)
+            False,
+        )
         self._performed_edit()
 
     def process_result(self, result):
         entity_gid, url_gid, wikipage, rel_id, link_type_id, entity_name = result
-        wp.output("» {wp} https://musicbrainz.org/{entitytype}/{gid}".format(
-            entitytype=self._current_entity_type.replace("_", "-"),
-            wp=wikipage,
-            gid=entity_gid
-        ))
+        wp.output(
+            "» {wp} https://musicbrainz.org/{entitytype}/{gid}".format(
+                entitytype=self._current_entity_type.replace("_", "-"), wp=wikipage, gid=entity_gid
+            )
+        )
         try:
             itempage = get_wikidata_itempage_from_wikilink(wikipage)
         except wp.exceptions.SiteDefinitionError:
             wp.warning("{page} no supported family".format(page=wikipage))
             return
-        except (wp.exceptions.InvalidTitleError) as e:
+        except wp.exceptions.InvalidTitleError as e:
             wp.error("Bad or invalid title received while processing {page}".format(page=wikipage))
             wp.exception(e, tb=True)
             return
         except SkipPage as e:
-            wp.warning("{page} is being skipped because: {reason}".format(page=wikipage,
-                                                                          reason=e))
+            wp.warning("{page} is being skipped because: {reason}".format(page=wikipage, reason=e))
             return
         except IsRedirectPage as e:
             wp.output("{page} is a redirect".format(page=wikipage))
@@ -442,27 +442,28 @@ class Bot(object):
         except ValueError as e:
             wp.output(e)
             return
-        except PageGone as e:
+        except PageGone:
             if self.can_edit:
                 self.end_removed(rel_id, link_type_id, entity_gid, url_gid, self._current_entity_type, wikipage)
             return
         if itempage is None:
-            wp.warning(u"There's no wikidata page for {mbid}".format(
-                mbid=entity_gid))
+            wp.warning("There's no wikidata page for {mbid}".format(mbid=entity_gid))
             return
 
-        if any((key.lower() == self.property_id.lower() and
-               claim.target == entity_gid)
-               for key, claims in itempage.claims.items() for claim in claims):
-            wp.debug(u"{page} already has property {pid} with value {mbid}".
-                     format(page=wikipage,
-                            mbid=entity_gid,
-                            pid=self.property_id))
+        if any(
+            (key.lower() == self.property_id.lower() and claim.target == entity_gid)
+            for key, claims in itempage.claims.items()
+            for claim in claims
+        ):
+            wp.debug(
+                "{page} already has property {pid} with value {mbid}".format(
+                    page=wikipage, mbid=entity_gid, pid=self.property_id
+                )
+            )
             self.donefunc(entity_gid)
             return
 
-        wp.output("{mbid} is not linked in Wikidata".format(
-                  mbid=entity_gid))
+        wp.output("{mbid} is not linked in Wikidata".format(mbid=entity_gid))
         self.add_mbid_claim_to_item(itempage, entity_gid, entity_name)
 
 
@@ -479,18 +480,18 @@ def entity_type_loop(bot, entitytype, limit):
     wiki_entity_query = create_url_mbid_query(entitytype, linkids)
     already_processed_query = create_already_processed_query(entitytype)
 
-    with do_readonly_query(wiki_entity_query, limit) as all_results, do_readwrite_query(already_processed_query) as already_processed:
+    with (
+        do_readonly_query(wiki_entity_query, limit) as all_results,
+        do_readwrite_query(already_processed_query) as already_processed,
+    ):
         already_processed_results = frozenset((row[0] for row in already_processed))
 
-        results_to_process = [r for r in all_results if r[0] not in
-                              already_processed_results]
+        results_to_process = [r for r in all_results if r[0] not in already_processed_results]
 
     if not results_to_process:
-        wp.output("No more unprocessed entries of type {etype} in MB".format(
-            etype=entitytype))
+        wp.output("No more unprocessed entries of type {etype} in MB".format(etype=entitytype))
     else:
-        wp.output("Processing {amount} {etype}s".format(amount=len(results_to_process),
-                                                        etype=entitytype))
+        wp.output("Processing {amount} {etype}s".format(amount=len(results_to_process), etype=entitytype))
 
     for r in results_to_process:
         bot.process_result(r)
@@ -501,10 +502,10 @@ def mainloop():
     entities = sorted(const.PROPERTY_IDS.keys())
 
     for arg in wp.handle_args():
-        if arg.startswith('-limit'):
-            limit = int(arg[len('-limit:'):])
+        if arg.startswith("-limit"):
+            limit = int(arg[len("-limit:") :])
         elif arg.startswith("-entities"):
-            entities = arg[len("-entities:"):].split(",")
+            entities = arg[len("-entities:") :].split(",")
 
     const.MUSICBRAINZ_CLAIM.setTarget(const.MUSICBRAINZ_WIKIDATAPAGE)
     setup_db()

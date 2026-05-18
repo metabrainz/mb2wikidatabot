@@ -1,10 +1,8 @@
-import pywikibot as wp
-
-
 from collections import defaultdict, namedtuple
 
+import pywikibot as wp
 
-WIKIDATA = wp.Site('wikidata', 'wikidata')
+WIKIDATA = wp.Site("wikidata", "wikidata")
 WIKIDATA_DATASITE = WIKIDATA.data_repository()
 
 
@@ -12,10 +10,11 @@ LinkIDsTuple = namedtuple("LinkIDs", "wikipedia wikidata")
 
 
 # The property id and item id for "is a disambiguation page" claims
-PROPERTY_ID_INSTANCE_OF = u"P31"
-SKIP_INSTANCE_OF_ITEMS = ("Q4167410",  # disambiguation page
-                          "Q273057",  # discography
-                          )
+PROPERTY_ID_INSTANCE_OF = "P31"
+SKIP_INSTANCE_OF_ITEMS = (
+    "Q4167410",  # disambiguation page
+    "Q273057",  # discography
+)
 
 
 PROPERTY_IDS = {
@@ -51,8 +50,7 @@ MUSICBRAINZ_CLAIM = wp.Claim(WIKIDATA_DATASITE, "P248")
 RETRIEVED_CLAIM = wp.Claim(WIKIDATA_DATASITE, "P813")
 NAMED_AS_CLAIM = wp.Claim(WIKIDATA_DATASITE, "P1810")
 
-GENERIC_URL_MBID_QUERY =\
-    """
+GENERIC_URL_MBID_QUERY = """
     SELECT {etype}.gid, url.gid, url.url, l_table.id, lt.id, {etype}.name
     FROM l_{etype}_url l_table
     JOIN link AS l
@@ -74,14 +72,12 @@ GENERIC_URL_MBID_QUERY =\
     LIMIT %s;
     """
 
-GENERIC_ALREADY_PROCESSED_QUERY =\
-    """
+GENERIC_ALREADY_PROCESSED_QUERY = """
     SELECT gid
     FROM bot_wikidata_{etype}_processed;
     """
 
-GENERIC_DONE_QUERY =\
-    """
+GENERIC_DONE_QUERY = """
     INSERT INTO bot_wikidata_{etype}_processed (GID)
         SELECT (%(mbid)s)
         WHERE NOT EXISTS (
@@ -91,8 +87,7 @@ GENERIC_DONE_QUERY =\
     );
     """
 
-GENERIC_CREATE_PROCESSED_TABLE_QUERY =\
-    """
+GENERIC_CREATE_PROCESSED_TABLE_QUERY = """
     CREATE TABLE IF NOT EXISTS bot_wikidata_{etype}_processed (
         gid uuid NOT NULL PRIMARY KEY,
         processed timestamp with time zone DEFAULT now()
@@ -100,10 +95,10 @@ GENERIC_CREATE_PROCESSED_TABLE_QUERY =\
 
     """
 
-QUERIES = defaultdict(lambda: None,
+QUERIES = defaultdict(
+    lambda: None,
     {
-        'work':
-        """
+        "work": """
         SELECT w.gid, url.gid, url.url, lwu.id, lt.id, w.name
         FROM l_url_work AS lwu
         JOIN link AS l
@@ -125,8 +120,7 @@ QUERIES = defaultdict(lambda: None,
         LIMIT %s;
 
         """,
-        'genre':
-        """
+        "genre": """
         SELECT g.gid, url.gid, url.url, lgu.id, lt.id, g.name
         FROM l_genre_url AS lgu
         JOIN link AS l
@@ -147,8 +141,7 @@ QUERIES = defaultdict(lambda: None,
             l.ended=FALSE
         LIMIT %s;
         """,
-        'area':
-        """
+        "area": """
         SELECT area.gid, url.gid, url.url, l_area_url.id, lt.id, area.name
         FROM l_area_url
         JOIN link AS l
@@ -200,8 +193,7 @@ QUERIES = defaultdict(lambda: None,
         )
         LIMIT %s;
         """,
-        'release_group':
-        """
+        "release_group": """
         SELECT rg.gid, url.gid, url.url, l_table.id, lt.id, rg.name
         FROM l_release_group_url l_table
         JOIN link AS l
@@ -222,5 +214,5 @@ QUERIES = defaultdict(lambda: None,
             l.ended=FALSE
         LIMIT %s;
         """,
-    }
+    },
 )
