@@ -137,7 +137,6 @@ def do_readwrite_query(query, vars=None):
     return cur
 
 
-from .checks import check_has_fragment  # noqa: F401
 from .checks import check_url_needs_to_be_skipped as _check_url_needs_to_be_skipped
 
 
