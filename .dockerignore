@@ -1,0 +1,11 @@
+.git
+.venv
+.ruff_cache
+.pytest_cache
+.coverage
+__pycache__
+*.pyc
+passwd
+bot/settings.py
+throttle.ctrl
+tests
