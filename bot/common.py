@@ -6,6 +6,7 @@ mb_client) with pywikibot, psycopg2, and the musicbrainz-bot editing library.
 It contains module-level initialization (DB connections, signal handlers) and
 is not directly importable in tests without mocking pywikibot.
 """
+
 import datetime
 from importlib import reload
 from time import sleep
