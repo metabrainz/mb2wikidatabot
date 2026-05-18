@@ -24,11 +24,13 @@ RUN apt-get update \
 RUN mkdir /code
 WORKDIR /code
 
-COPY pyproject.toml uv.lock /code/
+COPY pyproject.toml uv.lock README.md /code/
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-RUN uv sync --frozen --no-dev
+ENV UV_PYTHON_PREFERENCE=only-system
+RUN uv sync --frozen --no-dev --no-install-project
 
 COPY . /code
+RUN uv sync --frozen --no-dev
 
 # Consul Template service is already set up with the base image.
 # Just need to copy the configuration.
