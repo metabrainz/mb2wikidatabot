@@ -42,9 +42,6 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGHUP, signal_handler)
 
 
-WIKI_PREFIX = "/wiki/"
-
-
 readonly_db = None
 readwrite_db = None
 
@@ -160,32 +157,17 @@ def check_url_needs_to_be_skipped(wikilink, page):
     )
 
 
+from .checks import get_wikidata_itempage_from_wikilink as _get_wikidata_itempage_from_wikilink
+
+
 def get_wikidata_itempage_from_wikilink(wikilink):
     """Given a link to a wikipedia page, retrieve its page on Wikidata"""
-    parsed_url = urlparse(wikilink)
-    if "wikipedia" in parsed_url.netloc:
-        pagename = parsed_url.path.replace(WIKI_PREFIX, "")
-        wikilanguage = parsed_url.netloc.split(".")[0]
-        wikisite = wp.Site(wikilanguage, "wikipedia")
-        enwikipage = wp.Page(wikisite, pagename)
-        check_url_needs_to_be_skipped(wikilink, enwikipage)
-        try:
-            wikidatapage = wp.ItemPage.fromPage(enwikipage)
-        except wp.exceptions.NoPageError:
-            wp.error("%s does not exist" % enwikipage)
-            return None
-    elif "wikidata" in parsed_url.netloc:
-        pagename = parsed_url.path.replace(WIKI_PREFIX, "")
-        wikidatapage = wp.ItemPage(const.WIKIDATA_DATASITE, pagename)
-    else:
-        raise ValueError("%s is not a link to a wikipedia page" % wikilink)
-    try:
-        wikidatapage.get(get_redirect=True)
-    except wp.exceptions.NoPageError:
-        wp.error("%s does not exist" % pagename)
-        raise PageGone(pagename)
-    check_url_needs_to_be_skipped(wikilink, wikidatapage)
-    return wikidatapage
+    return _get_wikidata_itempage_from_wikilink(
+        wikilink,
+        wp=wp,
+        wikidata_datasite=const.WIKIDATA_DATASITE,
+        check_skip=check_url_needs_to_be_skipped,
+    )
 
 
 class Bot(object):

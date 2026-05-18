@@ -58,3 +58,43 @@ def check_url_needs_to_be_skipped(wikilink, page, *, item_page_cls, no_page_erro
                     item_id = claim.target.getID()
                     if item_id in skip_instance_of_items:
                         raise InstanceOfForbidden(full_url, item_id)
+
+
+WIKI_PREFIX = "/wiki/"
+
+
+def get_wikidata_itempage_from_wikilink(wikilink, *, wp, wikidata_datasite, check_skip):
+    """Given a link to a wikipedia/wikidata page, retrieve its Wikidata ItemPage.
+
+    Args:
+        wikilink: URL string.
+        wp: The pywikibot module.
+        wikidata_datasite: The Wikidata data repository site object.
+        check_skip: A callable(wikilink, page) that raises on skip conditions.
+    """
+    from .exceptions import PageGone
+
+    parsed_url = urlparse(wikilink)
+    if "wikipedia" in parsed_url.netloc:
+        pagename = parsed_url.path.replace(WIKI_PREFIX, "")
+        wikilanguage = parsed_url.netloc.split(".")[0]
+        wikisite = wp.Site(wikilanguage, "wikipedia")
+        enwikipage = wp.Page(wikisite, pagename)
+        check_skip(wikilink, enwikipage)
+        try:
+            wikidatapage = wp.ItemPage.fromPage(enwikipage)
+        except wp.exceptions.NoPageError:
+            wp.error("%s does not exist" % enwikipage)
+            return None
+    elif "wikidata" in parsed_url.netloc:
+        pagename = parsed_url.path.replace(WIKI_PREFIX, "")
+        wikidatapage = wp.ItemPage(wikidata_datasite, pagename)
+    else:
+        raise ValueError("%s is not a link to a wikipedia page" % wikilink)
+    try:
+        wikidatapage.get(get_redirect=True)
+    except wp.exceptions.NoPageError:
+        wp.error("%s does not exist" % pagename)
+        raise PageGone(pagename)
+    check_skip(wikilink, wikidatapage)
+    return wikidatapage
