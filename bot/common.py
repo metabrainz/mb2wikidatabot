@@ -130,10 +130,10 @@ def do_readonly_query(query, limit):
     return cur
 
 
-def do_readwrite_query(query, vars=None):
+def do_readwrite_query(query, params=None):
     """Perform `query` against the read-write database."""
     cur = readwrite_db.cursor()
-    cur.execute(query, vars)
+    cur.execute(query, params)
     return cur
 
 
@@ -159,7 +159,7 @@ def get_wikidata_itempage_from_wikilink(wikilink):
     )
 
 
-class Bot(object):
+class Bot:
     """Main bot that processes MusicBrainz entities and adds MBIDs to Wikidata.
 
     Handles the decision logic for each entity: resolve its Wikipedia/Wikidata
