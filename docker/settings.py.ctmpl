@@ -24,4 +24,5 @@ mb_editor_id="{{ template "KEY" "mb_editor_id"}}"
 sleep_time_in_seconds = 3600
 
 # Delay in seconds between MusicBrainz edits to avoid rate limiting.
-mb_edit_delay = 5
+{{- $mb_edit_delay := keyOrDefault (printf "docker-server-configs/wikidata-bot/config.%s.json/mb_edit_delay" (env "DEPLOY_ENV")) "5" }}
+mb_edit_delay = {{ $mb_edit_delay }}
