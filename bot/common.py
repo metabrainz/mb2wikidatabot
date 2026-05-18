@@ -309,7 +309,12 @@ class Bot(object):
         if self.client is None:
             self.number_of_allowed_edits = 0
             return
-        self.number_of_allowed_edits = self.client.edits_left()
+        try:
+            self.number_of_allowed_edits = mb_request_with_retry(
+                self.client.edits_left)
+        except Exception as e:
+            wp.warning("Could not determine remaining edits: %s" % e)
+            self.number_of_allowed_edits = 0
 
         # This includes those for today
         if not self.number_of_allowed_edits:
