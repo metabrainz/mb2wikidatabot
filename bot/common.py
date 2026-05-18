@@ -34,7 +34,6 @@ if settings.mb_user is None or settings.mb_password is None:
     editing = None
 else:
     from musicbrainz_bot import editing
-from time import sleep
 
 from .mb_client import mb_request_with_retry
 
