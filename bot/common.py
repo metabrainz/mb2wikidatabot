@@ -23,6 +23,7 @@ if settings.mb_user is None or settings.mb_password is None:
     editing = None
 else:
     from musicbrainz_bot import editing
+from .mb_client import mb_request_with_retry
 from sys import version_info
 from time import sleep
 from urllib.parse import urlparse
@@ -376,7 +377,8 @@ class Bot(object):
         :param new str:
         """
         wp.output("Fixing the redirect from %s to %s" % (old, new))
-        self.client.edit_url(gid, old, new, self.redirect_edit_note % (old, new))
+        mb_request_with_retry(self.client.edit_url, gid, old, new,
+                              self.redirect_edit_note % (old, new))
         self._performed_edit()
 
     def end_removed(self, rel_id, link_type_id, entity_gid, url_gid, entitytype, wikipage):
@@ -392,7 +394,8 @@ class Bot(object):
         entity0 = other_entity if (entitytype < 'url') else url_entity
         entity1 = url_entity if (entitytype < 'url') else other_entity
         wp.output("Removing non existing page %s" % (wikipage))
-        self.client.edit_relationship(
+        mb_request_with_retry(
+            self.client.edit_relationship,
             rel_id,
             entity0,
             entity1,
