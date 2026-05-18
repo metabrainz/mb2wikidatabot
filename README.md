@@ -1,5 +1,8 @@
 # Wikidata bot to add MBIDs
 
+See [ARCHITECTURE.md](ARCHITECTURE.md) for a high-level overview of how the bot
+works.
+
 ## Installation
 
 This project uses [uv](https://docs.astral.sh/uv/) for dependency management.
