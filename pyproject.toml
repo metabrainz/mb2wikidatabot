@@ -20,6 +20,7 @@ Repository = "https://github.com/metabrainz/mb2wikidatabot"
 dev = [
     "pre-commit>=4.0",
     "pytest>=8.0",
+    "pytest-cov>=7.1.0",
     "ruff>=0.15.0",
 ]
 
