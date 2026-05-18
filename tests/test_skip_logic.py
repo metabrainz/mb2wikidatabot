@@ -1,19 +1,41 @@
-"""Tests for URL skip/redirect logic in bot.common."""
+"""Tests for URL skip/redirect logic in bot.checks.
+
+These tests import bot.checks directly — no pywikibot mocking needed
+since the functions take all dependencies as explicit parameters.
+"""
 
 from unittest.mock import MagicMock
 
 import pytest
 
-from bot.common import (
+from bot.checks import check_has_fragment, check_url_needs_to_be_skipped
+from bot.exceptions import (
     HasFragment,
+    InstanceOfForbidden,
     IsDisambigPage,
     IsRedirectPage,
     IsRedirectWithItemPage,
-    InstanceOfForbidden,
-    check_has_fragment,
-    check_url_needs_to_be_skipped,
-    wp,
 )
+
+
+class FakeItemPage:
+    pass
+
+
+class NoPageError(Exception):
+    pass
+
+
+def _check(wikilink, page, item_page_cls=FakeItemPage):
+    """Helper that calls check_url_needs_to_be_skipped with test defaults."""
+    check_url_needs_to_be_skipped(
+        wikilink,
+        page,
+        item_page_cls=item_page_cls,
+        no_page_error=NoPageError,
+        property_id_instance_of="P31",
+        skip_instance_of_items=("Q4167410", "Q273057"),
+    )
 
 
 def _make_page(url="https://en.wikipedia.org/wiki/Test", is_redirect=False, is_disambig=False):
@@ -25,9 +47,7 @@ def _make_page(url="https://en.wikipedia.org/wiki/Test", is_redirect=False, is_d
 
 
 def _make_item_page(url, claims=None):
-    """Create a page that passes isinstance(x, wp.ItemPage)."""
-
-    class MockItemPage(wp.ItemPage):
+    class MockItemPage(FakeItemPage):
         pass
 
     page = MockItemPage()
@@ -52,95 +72,99 @@ class TestCheckHasFragment:
 
 class TestCheckUrlNeedsToBeSkipped:
     def test_normal_page_passes(self):
-        page = _make_page()
-        check_url_needs_to_be_skipped("https://en.wikipedia.org/wiki/Test", page)
+        _check("https://en.wikipedia.org/wiki/Test", _make_page())
 
     def test_fragment_in_url_raises(self):
         page = _make_page(url="https://en.wikipedia.org/wiki/Foo#bar")
         with pytest.raises(HasFragment):
-            check_url_needs_to_be_skipped("https://en.wikipedia.org/wiki/Foo#bar", page)
+            _check("https://en.wikipedia.org/wiki/Foo#bar", page)
 
     def test_disambig_page_raises(self):
         page = _make_page(is_disambig=True)
         with pytest.raises(IsDisambigPage):
-            check_url_needs_to_be_skipped("https://en.wikipedia.org/wiki/Test", page)
+            _check("https://en.wikipedia.org/wiki/Test", page)
 
     def test_redirect_without_item_raises_redirect(self):
-        """Redirect without its own wikidata item -> IsRedirectPage"""
         page = _make_page(is_redirect=True)
         target = MagicMock()
         target.full_url.return_value = "https://en.wikipedia.org/wiki/Target"
         page.getRedirectTarget.return_value = target
 
-        orig = getattr(wp.ItemPage, "fromPage", None)
-        wp.ItemPage.fromPage = MagicMock(side_effect=wp.exceptions.NoPageError("x"))
-        try:
-            with pytest.raises(IsRedirectPage) as exc_info:
-                check_url_needs_to_be_skipped("https://en.wikipedia.org/wiki/Old", page)
-            assert exc_info.value.new == "https://en.wikipedia.org/wiki/Target"
-        finally:
-            if orig is not None:
-                wp.ItemPage.fromPage = orig
+        item_page_cls = MagicMock()
+        item_page_cls.fromPage = MagicMock(side_effect=NoPageError("x"))
+
+        with pytest.raises(IsRedirectPage) as exc_info:
+            check_url_needs_to_be_skipped(
+                "https://en.wikipedia.org/wiki/Old",
+                page,
+                item_page_cls=item_page_cls,
+                no_page_error=NoPageError,
+                property_id_instance_of="P31",
+                skip_instance_of_items=("Q4167410",),
+            )
+        assert exc_info.value.new == "https://en.wikipedia.org/wiki/Target"
 
     def test_redirect_with_item_raises_skip(self):
-        """Redirect with its own wikidata item -> IsRedirectWithItemPage"""
         page = _make_page(is_redirect=True)
 
-        orig = getattr(wp.ItemPage, "fromPage", None)
-        wp.ItemPage.fromPage = MagicMock(return_value=MagicMock())
-        try:
-            with pytest.raises(IsRedirectWithItemPage):
-                check_url_needs_to_be_skipped("https://en.wikipedia.org/wiki/Old", page)
-        finally:
-            if orig is not None:
-                wp.ItemPage.fromPage = orig
+        item_page_cls = MagicMock()
+        item_page_cls.fromPage = MagicMock(return_value=MagicMock())
+
+        with pytest.raises(IsRedirectWithItemPage):
+            check_url_needs_to_be_skipped(
+                "https://en.wikipedia.org/wiki/Old",
+                page,
+                item_page_cls=item_page_cls,
+                no_page_error=NoPageError,
+                property_id_instance_of="P31",
+                skip_instance_of_items=("Q4167410",),
+            )
 
     def test_redirect_target_with_fragment_raises(self):
-        """Redirect target has a fragment -> HasFragment"""
         page = _make_page(is_redirect=True)
         target = MagicMock()
         target.full_url.return_value = "https://en.wikipedia.org/wiki/Target#section"
         page.getRedirectTarget.return_value = target
 
-        orig = getattr(wp.ItemPage, "fromPage", None)
-        wp.ItemPage.fromPage = MagicMock(side_effect=wp.exceptions.NoPageError("x"))
-        try:
-            with pytest.raises(HasFragment):
-                check_url_needs_to_be_skipped("https://en.wikipedia.org/wiki/Old", page)
-        finally:
-            if orig is not None:
-                wp.ItemPage.fromPage = orig
+        item_page_cls = MagicMock()
+        item_page_cls.fromPage = MagicMock(side_effect=NoPageError("x"))
+
+        with pytest.raises(HasFragment):
+            check_url_needs_to_be_skipped(
+                "https://en.wikipedia.org/wiki/Old",
+                page,
+                item_page_cls=item_page_cls,
+                no_page_error=NoPageError,
+                property_id_instance_of="P31",
+                skip_instance_of_items=("Q4167410",),
+            )
 
     def test_item_page_instance_of_disambiguation_raises(self):
-        """ItemPage instance of disambiguation -> InstanceOfForbidden"""
         claim = MagicMock()
         claim.target.getID.return_value = "Q4167410"
         page = _make_item_page("https://www.wikidata.org/wiki/Q123", {"P31": [claim]})
 
         with pytest.raises(InstanceOfForbidden) as exc_info:
-            check_url_needs_to_be_skipped("https://www.wikidata.org/wiki/Q123", page)
+            _check("https://www.wikidata.org/wiki/Q123", page)
         assert exc_info.value.item_id == "Q4167410"
 
     def test_item_page_instance_of_discography_raises(self):
-        """ItemPage instance of discography -> InstanceOfForbidden"""
         claim = MagicMock()
         claim.target.getID.return_value = "Q273057"
         page = _make_item_page("https://www.wikidata.org/wiki/Q456", {"P31": [claim]})
 
         with pytest.raises(InstanceOfForbidden) as exc_info:
-            check_url_needs_to_be_skipped("https://www.wikidata.org/wiki/Q456", page)
+            _check("https://www.wikidata.org/wiki/Q456", page)
         assert exc_info.value.item_id == "Q273057"
 
     def test_item_page_allowed_instance_passes(self):
-        """ItemPage with allowed P31 -> passes"""
         claim = MagicMock()
-        claim.target.getID.return_value = "Q5"  # human
+        claim.target.getID.return_value = "Q5"
         page = _make_item_page("https://www.wikidata.org/wiki/Q789", {"P31": [claim]})
 
-        check_url_needs_to_be_skipped("https://www.wikidata.org/wiki/Q789", page)
+        _check("https://www.wikidata.org/wiki/Q789", page)
 
     def test_item_page_no_claims_passes(self):
-        """ItemPage with no claims -> passes"""
         page = _make_item_page("https://www.wikidata.org/wiki/Q999")
 
-        check_url_needs_to_be_skipped("https://www.wikidata.org/wiki/Q999", page)
+        _check("https://www.wikidata.org/wiki/Q999", page)

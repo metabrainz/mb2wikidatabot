@@ -1,80 +1,110 @@
-"""Tests for get_wikidata_itempage_from_wikilink URL routing."""
+"""Tests for get_wikidata_itempage_from_wikilink URL routing.
 
-from unittest.mock import MagicMock, patch
+Imports bot.checks directly — no pywikibot mocking needed.
+"""
+
+from unittest.mock import MagicMock
 
 import pytest
 
-from bot.common import (
-    PageGone,
-    get_wikidata_itempage_from_wikilink,
-    wp,
-)
+from bot.checks import get_wikidata_itempage_from_wikilink
+from bot.exceptions import PageGone
+
+
+class NoPageError(Exception):
+    pass
+
+
+def _make_wp():
+    """Create a minimal mock wp module with the needed attributes."""
+    wp = MagicMock()
+    wp.exceptions.NoPageError = NoPageError
+    return wp
 
 
 class TestGetWikidataItempageFromWikilink:
     def test_invalid_url_raises_valueerror(self):
+        wp = _make_wp()
         with pytest.raises(ValueError, match="not a link to a wikipedia page"):
-            get_wikidata_itempage_from_wikilink("https://example.com/wiki/Foo")
+            get_wikidata_itempage_from_wikilink(
+                "https://example.com/wiki/Foo",
+                wp=wp,
+                wikidata_datasite=MagicMock(),
+                check_skip=MagicMock(),
+            )
 
-    @patch("bot.common.wp.Page")
-    @patch("bot.common.wp.Site")
-    @patch("bot.common.check_url_needs_to_be_skipped")
-    def test_wikipedia_url_extracts_language_and_page(self, mock_skip, mock_site, mock_page):
-        mock_wiki_page = MagicMock()
-        mock_page.return_value = mock_wiki_page
+    def test_wikipedia_url_extracts_language_and_page(self):
+        wp = _make_wp()
         mock_item = MagicMock()
         mock_item.get = MagicMock()
-        wp.ItemPage.fromPage = MagicMock(return_value=mock_item)
+        wp.ItemPage.fromPage.return_value = mock_item
 
-        result = get_wikidata_itempage_from_wikilink("https://en.wikipedia.org/wiki/The_Beatles")
+        result = get_wikidata_itempage_from_wikilink(
+            "https://en.wikipedia.org/wiki/The_Beatles",
+            wp=wp,
+            wikidata_datasite=MagicMock(),
+            check_skip=MagicMock(),
+        )
 
-        mock_site.assert_called_once_with("en", "wikipedia")
-        mock_page.assert_called_once_with(mock_site.return_value, "The_Beatles")
+        wp.Site.assert_called_once_with("en", "wikipedia")
+        wp.Page.assert_called_once_with(wp.Site.return_value, "The_Beatles")
         assert result == mock_item
 
-    @patch("bot.common.wp.Page")
-    @patch("bot.common.wp.Site")
-    @patch("bot.common.check_url_needs_to_be_skipped")
-    def test_japanese_wikipedia_url(self, mock_skip, mock_site, mock_page):
-        mock_wiki_page = MagicMock()
-        mock_page.return_value = mock_wiki_page
+    def test_japanese_wikipedia_url(self):
+        wp = _make_wp()
         mock_item = MagicMock()
         mock_item.get = MagicMock()
-        wp.ItemPage.fromPage = MagicMock(return_value=mock_item)
+        wp.ItemPage.fromPage.return_value = mock_item
 
-        get_wikidata_itempage_from_wikilink("https://ja.wikipedia.org/wiki/%E6%9D%B1%E4%BA%AC")
+        get_wikidata_itempage_from_wikilink(
+            "https://ja.wikipedia.org/wiki/%E6%9D%B1%E4%BA%AC",
+            wp=wp,
+            wikidata_datasite=MagicMock(),
+            check_skip=MagicMock(),
+        )
 
-        mock_site.assert_called_once_with("ja", "wikipedia")
+        wp.Site.assert_called_once_with("ja", "wikipedia")
 
-    @patch("bot.common.wp.Page")
-    @patch("bot.common.wp.Site")
-    @patch("bot.common.check_url_needs_to_be_skipped")
-    def test_wikipedia_page_not_found_returns_none(self, mock_skip, mock_site, mock_page):
-        wp.ItemPage.fromPage = MagicMock(side_effect=wp.exceptions.NoPageError("x"))
+    def test_wikipedia_page_not_found_returns_none(self):
+        wp = _make_wp()
+        wp.ItemPage.fromPage.side_effect = NoPageError("x")
 
-        result = get_wikidata_itempage_from_wikilink("https://en.wikipedia.org/wiki/Nonexistent")
+        result = get_wikidata_itempage_from_wikilink(
+            "https://en.wikipedia.org/wiki/Nonexistent",
+            wp=wp,
+            wikidata_datasite=MagicMock(),
+            check_skip=MagicMock(),
+        )
 
         assert result is None
 
-    @patch("bot.common.check_url_needs_to_be_skipped")
-    @patch("bot.common.wp.ItemPage")
-    def test_wikidata_url_creates_item_directly(self, mock_item_cls, mock_skip):
+    def test_wikidata_url_creates_item_directly(self):
+        wp = _make_wp()
         mock_item = MagicMock()
         mock_item.get = MagicMock()
-        mock_item_cls.return_value = mock_item
+        wp.ItemPage.return_value = mock_item
+        datasite = MagicMock()
 
-        result = get_wikidata_itempage_from_wikilink("https://www.wikidata.org/wiki/Q42")
+        result = get_wikidata_itempage_from_wikilink(
+            "https://www.wikidata.org/wiki/Q42",
+            wp=wp,
+            wikidata_datasite=datasite,
+            check_skip=MagicMock(),
+        )
 
-        mock_item_cls.assert_called_once()
-        args = mock_item_cls.call_args[0]
-        assert args[1] == "Q42"
+        wp.ItemPage.assert_called_once_with(datasite, "Q42")
+        assert result == mock_item
 
-    @patch("bot.common.check_url_needs_to_be_skipped")
-    @patch("bot.common.wp.ItemPage")
-    def test_wikidata_page_gone_raises(self, mock_item_cls, mock_skip):
+    def test_wikidata_page_gone_raises(self):
+        wp = _make_wp()
         mock_item = MagicMock()
-        mock_item.get.side_effect = wp.exceptions.NoPageError("x")
-        mock_item_cls.return_value = mock_item
+        mock_item.get.side_effect = NoPageError("x")
+        wp.ItemPage.return_value = mock_item
 
         with pytest.raises(PageGone):
-            get_wikidata_itempage_from_wikilink("https://www.wikidata.org/wiki/Q99999999")
+            get_wikidata_itempage_from_wikilink(
+                "https://www.wikidata.org/wiki/Q99999999",
+                wp=wp,
+                wikidata_datasite=MagicMock(),
+                check_skip=MagicMock(),
+            )
