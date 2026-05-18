@@ -35,7 +35,18 @@ if settings.mb_user is None or settings.mb_password is None:
 else:
     from musicbrainz_bot import editing
 
+from .checks import check_url_needs_to_be_skipped as _check_url_needs_to_be_skipped
+from .checks import get_wikidata_itempage_from_wikilink as _get_wikidata_itempage_from_wikilink
+from .exceptions import (
+    IsRedirectPage,
+    PageGone,
+    SettingsReloadedException,
+    SkipPage,
+)
 from .mb_client import mb_request_with_retry
+from .queries import create_already_processed_query as _create_already_processed_query
+from .queries import create_processed_table_query as _create_processed_table_query
+from .queries import create_url_mbid_query as _create_url_mbid_query
 
 
 # Set up a signal handler to reload the settings on SIGHUP
@@ -51,17 +62,6 @@ signal.signal(signal.SIGHUP, signal_handler)
 
 readonly_db = None
 readwrite_db = None
-
-
-from .exceptions import (
-    IsRedirectPage,
-    PageGone,
-    SettingsReloadedException,
-    SkipPage,
-)
-from .queries import create_already_processed_query as _create_already_processed_query
-from .queries import create_processed_table_query as _create_processed_table_query
-from .queries import create_url_mbid_query as _create_url_mbid_query
 
 
 def create_url_mbid_query(entitytype, linkids):
@@ -137,9 +137,6 @@ def do_readwrite_query(query, vars=None):
     return cur
 
 
-from .checks import check_url_needs_to_be_skipped as _check_url_needs_to_be_skipped
-
-
 def check_url_needs_to_be_skipped(wikilink, page):
     """Check if `page` is a redirect or disambiguation page"""
     _check_url_needs_to_be_skipped(
@@ -150,9 +147,6 @@ def check_url_needs_to_be_skipped(wikilink, page):
         property_id_instance_of=const.PROPERTY_ID_INSTANCE_OF,
         skip_instance_of_items=const.SKIP_INSTANCE_OF_ITEMS,
     )
-
-
-from .checks import get_wikidata_itempage_from_wikilink as _get_wikidata_itempage_from_wikilink
 
 
 def get_wikidata_itempage_from_wikilink(wikilink):
