@@ -144,53 +144,20 @@ def do_readwrite_query(query, vars=None):
     return cur
 
 
-def check_has_fragment(url):
-    """Check if `url` contains a fragment
-
-    This is most often the case for discography pages where a single album is
-    only mentioned in a few paragraphs."""
-    parsed_url = urlparse(url)
-    if parsed_url.fragment:
-        raise HasFragment(url)
+from .checks import check_has_fragment  # noqa: F401
+from .checks import check_url_needs_to_be_skipped as _check_url_needs_to_be_skipped
 
 
 def check_url_needs_to_be_skipped(wikilink, page):
     """Check if `page` is a redirect or disambiguation page"""
-    full_url = page.full_url()
-    check_has_fragment(full_url)
-    if page.isRedirectPage():
-        try:
-            wp.ItemPage.fromPage(page)
-        except wp.exceptions.NoPageError:
-            # Page is a redirect without its own wikidata item -
-            # everything's OK, we can safely fix the redirect.
-            # Examples of this are
-            # https://en.wikipedia.org/w/index.php?title=Star_Wars_Episode_I:_The_Phantom_Menace_(soundtrack)&redirect=no
-            pass
-        else:
-            # Page is a redirect, but has its own wikidata item - it's better
-            # to not touch this.
-            # Examples of this are
-            # https://en.wikipedia.org/wiki/Hybrid_Theory_%28EP%29, which is a
-            # redirect on en.wp, but has its own article on lots of other
-            # wikipedias and therefore its own wikidata item.
-            raise IsRedirectWithItemPage(full_url)
-        page = page.getRedirectTarget()
-        full_url = page.full_url()
-        check_has_fragment(full_url)
-        raise IsRedirectPage(wikilink, full_url)
-    if page.isDisambig():
-        raise IsDisambigPage(full_url)
-    # page.isDisambig() is False for wikidata items, even if they're instances
-    # of a disambiguation page, so check for that and other forbidden instance
-    # of claims manually.
-    if isinstance(page, wp.ItemPage):
-        for key, claims in page.claims.items():
-            if key.lower() == const.PROPERTY_ID_INSTANCE_OF.lower():
-                for claim in claims:
-                    item_id = claim.target.getID()
-                    if item_id in const.SKIP_INSTANCE_OF_ITEMS:
-                        raise InstanceOfForbidden(full_url, item_id)
+    _check_url_needs_to_be_skipped(
+        wikilink,
+        page,
+        item_page_cls=wp.ItemPage,
+        no_page_error=wp.exceptions.NoPageError,
+        property_id_instance_of=const.PROPERTY_ID_INSTANCE_OF,
+        skip_instance_of_items=const.SKIP_INSTANCE_OF_ITEMS,
+    )
 
 
 def get_wikidata_itempage_from_wikilink(wikilink):
