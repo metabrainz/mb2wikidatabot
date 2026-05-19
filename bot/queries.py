@@ -16,9 +16,7 @@ def create_url_mbid_query(entitytype, linkids, *, generic_query, custom_queries)
     custom = custom_queries[entitytype]
     if custom is not None:
         return custom
-    return generic_query.format(
-        etype=entitytype, wikipedia_linkid=linkids.wikipedia, wikidata_linkid=linkids.wikidata
-    )
+    return generic_query.format(etype=entitytype, wikipedia_linkid=linkids.wikipedia, wikidata_linkid=linkids.wikidata)
 
 
 def create_already_processed_query(entitytype, *, template):

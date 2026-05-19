@@ -55,8 +55,15 @@ class TestBotPerformedEdit:
 
 
 class TestBotProcessResult:
-    def _make_result(self, entity_gid="abc-123", url_gid="url-456", wikipage="https://www.wikidata.org/wiki/Q42",
-                     rel_id="1", link_type_id="352", entity_name="Test"):
+    def _make_result(
+        self,
+        entity_gid="abc-123",
+        url_gid="url-456",
+        wikipage="https://www.wikidata.org/wiki/Q42",
+        rel_id="1",
+        link_type_id="352",
+        entity_name="Test",
+    ):
         return (entity_gid, url_gid, wikipage, rel_id, link_type_id, entity_name)
 
     @patch("bot.common.get_wikidata_itempage_from_wikilink")
@@ -136,11 +143,13 @@ class TestEntityTypeLoop:
     @patch("bot.common.do_readonly_query")
     def test_filters_already_processed(self, mock_ro, mock_rw, bot):
         # Simulate 3 results, 1 already processed
-        mock_ro.return_value.__enter__ = MagicMock(return_value=[
-            ("gid-1", "u1", "http://a", "1", "1", "A"),
-            ("gid-2", "u2", "http://b", "2", "2", "B"),
-            ("gid-3", "u3", "http://c", "3", "3", "C"),
-        ])
+        mock_ro.return_value.__enter__ = MagicMock(
+            return_value=[
+                ("gid-1", "u1", "http://a", "1", "1", "A"),
+                ("gid-2", "u2", "http://b", "2", "2", "B"),
+                ("gid-3", "u3", "http://c", "3", "3", "C"),
+            ]
+        )
         mock_ro.return_value.__exit__ = MagicMock(return_value=False)
         mock_rw.return_value.__enter__ = MagicMock(return_value=[("gid-2",)])
         mock_rw.return_value.__exit__ = MagicMock(return_value=False)

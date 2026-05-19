@@ -60,9 +60,7 @@ class TestMbRequestWithRetry:
 
     @patch("bot.mb_client.sleep")
     def test_exponential_backoff(self, mock_sleep):
-        func = MagicMock(
-            side_effect=[_make_http_error(429), _make_http_error(429), "ok"]
-        )
+        func = MagicMock(side_effect=[_make_http_error(429), _make_http_error(429), "ok"])
         mb_request_with_retry(func)
         assert mock_sleep.call_args_list[0][0][0] == 10  # initial
         assert mock_sleep.call_args_list[1][0][0] == 20  # doubled

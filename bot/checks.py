@@ -25,7 +25,9 @@ def check_has_fragment(url):
         raise HasFragment(url)
 
 
-def check_url_needs_to_be_skipped(wikilink, page, *, item_page_cls, no_page_error, property_id_instance_of, skip_instance_of_items):
+def check_url_needs_to_be_skipped(
+    wikilink, page, *, item_page_cls, no_page_error, property_id_instance_of, skip_instance_of_items
+):
     """Check if `page` is a redirect or disambiguation page.
 
     Args:
