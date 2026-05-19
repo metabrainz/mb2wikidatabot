@@ -49,7 +49,6 @@ from .queries import create_processed_table_query as _create_processed_table_que
 from .queries import create_url_mbid_query as _create_url_mbid_query
 
 
-# Set up a signal handler to reload the settings on SIGHUP
 def signal_handler(signal, frame):
     """Handle SIGHUP by reloading settings and restarting the main loop."""
     wp.output("HUP received")
