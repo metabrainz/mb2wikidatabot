@@ -27,7 +27,6 @@ if settings.mb_user is None or settings.mb_password is None:
 else:
     from musicbrainz_bot import editing
 from time import sleep
-from urllib.parse import urlparse
 
 from .mb_client import mb_request_with_retry
 
@@ -47,17 +46,11 @@ readwrite_db = None
 
 
 from .exceptions import (
-    HasFragment,
-    InstanceOfForbidden,
-    IsDisambigPage,
     IsRedirectPage,
-    IsRedirectWithItemPage,
     PageGone,
     SettingsReloadedException,
     SkipPage,
 )
-
-
 from .queries import create_already_processed_query as _create_already_processed_query
 from .queries import create_processed_table_query as _create_processed_table_query
 from .queries import create_url_mbid_query as _create_url_mbid_query

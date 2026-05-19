@@ -1,7 +1,5 @@
 """Tests for bot.queries and bot.exceptions."""
 
-import pytest
-
 from bot.exceptions import (
     HasFragment,
     InstanceOfForbidden,
@@ -54,7 +52,10 @@ class TestQueryBuilders:
 
         custom_queries = {"artist": None}
         result = create_url_mbid_query(
-            "artist", FakeLinkIDs(), generic_query="SELECT {etype} {wikipedia_linkid} {wikidata_linkid}", custom_queries=custom_queries
+            "artist",
+            FakeLinkIDs(),
+            generic_query="SELECT {etype} {wikipedia_linkid} {wikidata_linkid}",
+            custom_queries=custom_queries,
         )
         assert "artist" in result
         assert "179" in result
