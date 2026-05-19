@@ -110,12 +110,12 @@ def get_wikidata_itempage_from_wikilink(
         pagename = parsed_url.path.replace(WIKI_PREFIX, "")
         wikilanguage = parsed_url.netloc.split(".")[0]
         wikisite = wp.Site(wikilanguage, "wikipedia")
-        enwikipage = wp.Page(wikisite, pagename)
-        check_skip(wikilink, enwikipage)
+        wikipage = wp.Page(wikisite, pagename)
+        check_skip(wikilink, wikipage)
         try:
-            wikidatapage = wp.ItemPage.fromPage(enwikipage)
+            wikidatapage = wp.ItemPage.fromPage(wikipage)
         except wp.exceptions.NoPageError:
-            wp.error("%s does not exist" % enwikipage)
+            wp.error("%s does not exist" % wikipage)
             return None
     elif "wikidata" in parsed_url.netloc:
         pagename = parsed_url.path.replace(WIKI_PREFIX, "")
