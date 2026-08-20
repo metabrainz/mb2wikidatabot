@@ -1,0 +1,11 @@
+*.pyc
+*~
+.cache
+.coverage
+.pytest_cache
+.venv
+.ruff_cache
+__pycache__
+bot/settings.py
+passwd
+throttle.ctrl

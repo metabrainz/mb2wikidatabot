@@ -1,0 +1,49 @@
+[project]
+name = "mb2wikidatabot"
+version = "0.1.0"
+description = "Bot to add MusicBrainz IDs to Wikidata"
+authors = [{name = "MetaBrainz Foundation"}]
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "psycopg2-binary>=2.9",
+    "mechanize>=0.4",
+    "pywikibot==11.2.0",
+    "mwparserfromhell>=0.5.0",
+    "musicbrainz-bot @ git+https://github.com/metabrainz/musicbrainz-bot.git@862f80c4269352dd8c6f71d9a2d964b8410c229a",
+]
+
+[project.urls]
+Repository = "https://github.com/metabrainz/mb2wikidatabot"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.0",
+    "pytest>=8.0",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.15.0",
+    "ty>=0.0.1a1",
+]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+"bot/common.py" = ["E402"]  # imports after psycopg2 type registration and config loop
+"user-config.py" = ["F821"]  # pywikibot injects globals before this runs
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["bot"]

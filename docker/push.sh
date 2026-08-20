@@ -4,10 +4,16 @@
 # and push it to the Docker Hub, with an optional tag (by default "latest").
 #
 # Usage:
-#   $ ./push.sh [tag]
+#   $ ./docker/push.sh [tag]
+
+set -eu
 
 cd "$(dirname "${BASH_SOURCE[0]}")/../"
 
-TAG_PART=${1:-latest}
-docker build -t metabrainz/wikidata-bot:$TAG_PART .
-docker push metabrainz/wikidata-bot:$TAG_PART
+TAG=${1:-latest}
+IMAGE="metabrainz/wikidata-bot:$TAG"
+
+echo "Building $IMAGE..."
+docker build -t "$IMAGE" .
+echo "Pushing $IMAGE..."
+docker push "$IMAGE"

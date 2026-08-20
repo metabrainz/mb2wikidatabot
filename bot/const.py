@@ -1,10 +1,8 @@
-import pywikibot as wp
-
-
 from collections import defaultdict, namedtuple
 
+import pywikibot as wp
 
-WIKIDATA = wp.Site('wikidata', 'wikidata')
+WIKIDATA = wp.Site("wikidata", "wikidata")
 WIKIDATA_DATASITE = WIKIDATA.data_repository()
 
 
@@ -12,10 +10,11 @@ LinkIDsTuple = namedtuple("LinkIDs", "wikipedia wikidata")
 
 
 # The property id and item id for "is a disambiguation page" claims
-PROPERTY_ID_INSTANCE_OF = u"P31"
-SKIP_INSTANCE_OF_ITEMS = ("Q4167410",  # disambiguation page
-                          "Q273057",  # discography
-                          )
+PROPERTY_ID_INSTANCE_OF = "P31"
+SKIP_INSTANCE_OF_ITEMS = (
+    "Q4167410",  # disambiguation page
+    "Q273057",  # discography
+)
 
 
 PROPERTY_IDS = {
@@ -46,13 +45,20 @@ LINK_IDS = {
 }
 
 
-MUSICBRAINZ_WIKIDATAPAGE = wp.ItemPage(WIKIDATA_DATASITE, "Q14005")
-MUSICBRAINZ_CLAIM = wp.Claim(WIKIDATA_DATASITE, "P248")
-RETRIEVED_CLAIM = wp.Claim(WIKIDATA_DATASITE, "P813")
-NAMED_AS_CLAIM = wp.Claim(WIKIDATA_DATASITE, "P1810")
+# Wikidata item for MusicBrainz (used as source)
+MUSICBRAINZ_ITEM_ID = "Q14005"
 
-GENERIC_URL_MBID_QUERY =\
-    """
+# Property IDs for claim qualifiers and sources
+PROPERTY_ID_STATED_IN = "P248"
+PROPERTY_ID_RETRIEVED = "P813"
+PROPERTY_ID_SUBJECT_NAMED_AS = "P1810"
+
+MUSICBRAINZ_WIKIDATAPAGE = wp.ItemPage(WIKIDATA_DATASITE, MUSICBRAINZ_ITEM_ID)
+MUSICBRAINZ_CLAIM = wp.Claim(WIKIDATA_DATASITE, PROPERTY_ID_STATED_IN)
+RETRIEVED_CLAIM = wp.Claim(WIKIDATA_DATASITE, PROPERTY_ID_RETRIEVED)
+NAMED_AS_CLAIM = wp.Claim(WIKIDATA_DATASITE, PROPERTY_ID_SUBJECT_NAMED_AS)
+
+GENERIC_URL_MBID_QUERY = """
     SELECT {etype}.gid, url.gid, url.url, l_table.id, lt.id, {etype}.name
     FROM l_{etype}_url l_table
     JOIN link AS l
@@ -74,14 +80,12 @@ GENERIC_URL_MBID_QUERY =\
     LIMIT %s;
     """
 
-GENERIC_ALREADY_PROCESSED_QUERY =\
-    """
+GENERIC_ALREADY_PROCESSED_QUERY = """
     SELECT gid
     FROM bot_wikidata_{etype}_processed;
     """
 
-GENERIC_DONE_QUERY =\
-    """
+GENERIC_DONE_QUERY = """
     INSERT INTO bot_wikidata_{etype}_processed (GID)
         SELECT (%(mbid)s)
         WHERE NOT EXISTS (
@@ -91,8 +95,7 @@ GENERIC_DONE_QUERY =\
     );
     """
 
-GENERIC_CREATE_PROCESSED_TABLE_QUERY =\
-    """
+GENERIC_CREATE_PROCESSED_TABLE_QUERY = """
     CREATE TABLE IF NOT EXISTS bot_wikidata_{etype}_processed (
         gid uuid NOT NULL PRIMARY KEY,
         processed timestamp with time zone DEFAULT now()
@@ -100,10 +103,12 @@ GENERIC_CREATE_PROCESSED_TABLE_QUERY =\
 
     """
 
-QUERIES = defaultdict(lambda: None,
+QUERIES = defaultdict(
+    lambda: None,
     {
-        'work':
-        """
+        # Custom queries for entity types where the generic template doesn't fit.
+        # Link type IDs here must match the values in LINK_IDS above.
+        "work": f"""
         SELECT w.gid, url.gid, url.url, lwu.id, lt.id, w.name
         FROM l_url_work AS lwu
         JOIN link AS l
@@ -115,7 +120,7 @@ QUERIES = defaultdict(lambda: None,
         JOIN url
             ON lwu.entity0=url.id
         WHERE
-            lt.id = 351
+            lt.id = {LINK_IDS["work"].wikidata}
         AND
             lwu.edits_pending=0
         AND
@@ -125,8 +130,7 @@ QUERIES = defaultdict(lambda: None,
         LIMIT %s;
 
         """,
-        'genre':
-        """
+        "genre": f"""
         SELECT g.gid, url.gid, url.url, lgu.id, lt.id, g.name
         FROM l_genre_url AS lgu
         JOIN link AS l
@@ -138,7 +142,7 @@ QUERIES = defaultdict(lambda: None,
         JOIN url
             ON lgu.entity1=url.id
         WHERE
-            lt.id = 1087
+            lt.id = {LINK_IDS["genre"].wikidata}
         AND
             lgu.edits_pending=0
         AND
@@ -147,8 +151,7 @@ QUERIES = defaultdict(lambda: None,
             l.ended=FALSE
         LIMIT %s;
         """,
-        'area':
-        """
+        "area": f"""
         SELECT area.gid, url.gid, url.url, l_area_url.id, lt.id, area.name
         FROM l_area_url
         JOIN link AS l
@@ -160,7 +163,7 @@ QUERIES = defaultdict(lambda: None,
         JOIN url
             ON l_area_url.entity1=url.id
         WHERE
-            lt.id IN (355, 358)
+            lt.id IN ({LINK_IDS["area"].wikipedia}, {LINK_IDS["area"].wikidata})
         AND
             l_area_url.edits_pending=0
         AND
@@ -200,8 +203,7 @@ QUERIES = defaultdict(lambda: None,
         )
         LIMIT %s;
         """,
-        'release_group':
-        """
+        "release_group": f"""
         SELECT rg.gid, url.gid, url.url, l_table.id, lt.id, rg.name
         FROM l_release_group_url l_table
         JOIN link AS l
@@ -213,7 +215,7 @@ QUERIES = defaultdict(lambda: None,
         JOIN url
             ON l_table.entity1=url.id
         WHERE
-            lt.id = 353
+            lt.id = {LINK_IDS["release_group"].wikidata}
         AND
             l_table.edits_pending=0
         AND
@@ -222,5 +224,5 @@ QUERIES = defaultdict(lambda: None,
             l.ended=FALSE
         LIMIT %s;
         """,
-    }
+    },
 )
